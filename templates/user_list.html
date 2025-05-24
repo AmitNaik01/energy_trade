@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<body>
+
+<!-- Sidebar -->
+{% include "includes/admin_sidebar.html" %}
+
+
+<!-- Page Content -->
+<div class="side-div-section24" >
+    <div class="w3-container w3-teal">
+        <div><h1>Logo</h1></div>
+
+        <div class="logo-left-icons">
+            <i class="material-icons">&#xe001;</i>
+            <i class="material-icons">&#xe1ac;</i>
+            <i class="material-icons">&#xe853;</i>
+        </div>
+
+        <!-- Hamburger Menu (Visible in mobile view) -->
+        <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
+    </div>
+
+    <div class="w3-container">
+        <div class="all-users-container">
+            <div class="all-user-title-box-with-search">
+                <div class="all-user-deaceboarrd-search user-page-searchbar-box">
+                    <i style="font-size:24px" class="fa">&#xf002;</i>
+                    <input type="search" class="user-page-searchbar" name="" id="" placeholder="Search">
+<!--                    <p>Sort by</p>-->
+                </div>
+
+<!--                <div class="all-tiel-box-conetn">-->
+<!--                    <a href="adduser.html">+Add Users</a>-->
+<!--                </div>-->
+            </div>
+        </div>
+
+        <table class="section-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email Id</th>
+                    <th>Address</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Repeat this block for each user entry -->
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>124, Ashok vihar, keshav...</td>
+                    <td class="buyer7890">{{ user.role }}</td>
+                    <td class="active5678">{{ user.status }}</td>
+                    <td class="icons5678">
+                      <a href="{% url 'user_details' user.id %}">
+  <i class="fa see45" style="font-size:24px">&#xf06e;</i>
+</a>
+
+
+                        <a href="{% url 'edit_user_details' user.id %}">
+  <i style="font-size:24px" class="fa edit45">&#xf044;</i>
+</a>
+
+                        <form id="delete-form-{{ user.id }}" action="{% url 'delete_user' user.id %}" method="POST" style="display:none;">
+        {% csrf_token %}
+    </form>
+
+    <!-- Trash Icon -->
+    <i style="font-size:24px; cursor:pointer;" class="fa trash45" onclick="confirmDelete({{ user.id }})">&#xf014;</i>
+                    </td>
+                </tr>
+                {% endfor %}
+                <!-- Add more rows as needed -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- JavaScript for the pop-up confirmation -->
+<script>
+    function confirmDelete(event) {
+        event.preventDefault(); // Prevent the default behavior of the icon (if any)
+        var confirmation = confirm("Are you sure you want to delete this user?");
+        if (confirmation) {
+            // Add the delete action here (e.g., removing the row, sending a delete request, etc.)
+            alert("User deleted successfully!");
+            // If you want to actually delete the row from the table:
+            var row = event.target.closest("tr");
+            row.remove();
+        } else {
+            alert("User deletion canceled.");
+        }
+    }
+
+    function confirmDelete(userId) {
+        if (confirm("Are you sure you want to delete this user?")) {
+            document.getElementById(`delete-form-${userId}`).submit();
+        }
+    }
+</script>
+
+</body>
+<script src="index.js"></script>
+
+</html>

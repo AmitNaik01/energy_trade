@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <title>Seller Transactions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'index.css' %}">
+
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+</head>
+<body>
+
+<!-- Sidebar -->
+{% include "includes/seller_sidebar.html" %}
+<!-- Page Content -->
+<div class="side-div-section24">
+    <div class="w3-container w3-teal">
+        <div><h1>Logo</h1></div>
+
+
+
+        <div class="logo-left-icons">
+            <i class="material-icons">&#xe001;</i>
+            <i class="material-icons">&#xe1ac;</i>
+            <i class="material-icons">&#xe853;</i>
+        </div>
+
+        <!-- Hamburger Menu (Visible in mobile view) -->
+        <span class="menu-btn">&#9776;</span>
+    </div>
+
+    <div class="add-user-page-box">
+        <p>Transaction</p>
+    </div>
+
+    <div class="transtaion-div">
+<!--        <div class="transtion-date-box">-->
+<!--            <p>Sep 9 2025 - Sep 15 2024</p>-->
+<!--        </div>-->
+
+<!--        <div class="transtion-exp-dow-div">-->
+<!--            <div class="exp-transtion-box">-->
+<!--                <p>Export CSV</p>-->
+<!--            </div>-->
+
+<!--            <div class="invoice-transtion-box">-->
+<!--                <p>Download invoice</p>-->
+<!--            </div>-->
+<!--        </div>-->
+        <form method="get" class="form-inline" style="margin: 15px;">
+    <input type="text" name="search" value="{{ search_query }}" placeholder="Search by ID, Buyer, Seller..."
+        class="form-control" style="max-width: 200px; min-width: 200px;">
+
+    <input type="date" name="start_date" value="{{ start_date }}"
+        class="form-control" style="max-width: 160px; min-width: 160px;">
+
+    <input type="date" name="end_date" value="{{ end_date }}"
+        class="form-control" style="max-width: 160px; min-width: 160px;">
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'seller_transactions' %}" class="btn btn-secondary">Reset</a>
+</form>
+        <div class="exp-transtion-box">
+    <a href="{% url 'export_trades_csv' %}" class="btn btn-success" style="text-decoration: none; color: white;">
+        Export CSV
+    </a>
+</div>
+    </div>
+
+    <div class="w3-container">
+        <table class="section-table table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Ref Id</th>
+                    <th>Transaction Id</th>
+                    <th>Date and Time</th>
+                    <th>From</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+   <tbody>
+    {% for trade in trades %}
+    <tr>
+        <td>{{ trade.buyer.username }}</td> <!-- Ref Id -->
+        <td>{{ trade.id }}</td> <!-- Transaction Id -->
+        <td>{{ trade.created_at|date:"M d, Y, h:i A" }}</td>
+        <td>{{ trade.seller.email }}</td> <!-- From -->
+        <td>{{ trade.display_type }}</td>
+        <td class="active5678">{{ trade.status }}</td>
+        <td class="icons5678">
+                    <a href="{% url 'download_invoice' trade.id %}" class="btn btn-primary" target="_blank">
+    Download Invoice
+  </a>
+                </td>
+
+    </tr>
+    {% empty %}
+    <tr><td colspan="6">No transactions found.</td></tr>
+    {% endfor %}
+</tbody>
+        </table>
+    </div>
+</div>
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    const query = this.value;
+
+    fetch(`/seller/transactions/?q=${encodeURIComponent(query)}`)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newTable = doc.querySelector('.section-table tbody');
+            document.querySelector('.section-table tbody').innerHTML = newTable.innerHTML;
+        });
+});
+</script>
+
+<script src="{% static 'index.js' %}"></script>
+</body>
+</html>

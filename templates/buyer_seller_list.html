@@ -1,0 +1,120 @@
+
+<!DOCTYPE html>
+{% load static %}
+<html>
+<title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<body>
+
+    <style>
+        .saller-user-list-heading{
+            font-size: 20px;
+            color: black;
+        }
+
+        .icons56785{
+            background-color: rgb(51, 51, 51);
+            color: white !important;
+            cursor: pointer;
+        }
+    </style>
+
+<!-- Sidebar -->
+{% include "includes/buyer_sidebar.html" %}
+
+<!-- Page Content -->
+<div class="side-div-section24" >
+    <div class="w3-container w3-teal">
+        <div><h1>Logo</h1></div>
+
+        <div class="logo-left-icons">
+            <a href="index.html">signin</a>
+            <a href="register.html">signup</a>
+        </div>
+        <div class="logo-left-icons">
+            <i class="material-icons">&#xe001;</i>
+            <i class="material-icons">&#xe1ac;</i>
+            <i class="material-icons">&#xe853;</i>
+        </div>
+
+        <!-- Hamburger Menu (Visible in mobile view) -->
+        <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
+    </div>
+
+    <div class="w3-container">
+        <div class="all-users-container">
+            <h1 class="saller-user-list-heading">Sellers list</h1>
+<!--            <div class="all-user-title-box-with-search">-->
+<!--                <div class="all-user-deaceboarrd-search user-page-searchbar-box">-->
+<!--                    <i style="font-size:24px" class="fa">&#xf002;</i>-->
+<!--                    <input type="search" class="user-page-searchbar" name="" id="" placeholder="Search">-->
+<!--                </div>-->
+<!--            </div>-->
+        </div>
+
+        <table class="section-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>Total Energy Sold (kWh)</th>
+<!--                <th>Contact No</th>-->
+                <th>Status</th>
+<!--                <th>Notify</th>-->
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for seller in sellers_data %}
+                <tr>
+                    <td>{{ seller.name }}</td>
+                    <td>{{ seller.email }}</td>
+                    <td>{{ seller.address }}</td>
+                    <td>{{ seller.energy_bought|floatformat:2 }} kWh</td>
+<!--                    <td>{{ seller.contact_no }}</td>-->
+                    <td class="active5678">{{ seller.status }}</td>
+<!--                    <td class="icons56785">Make a trade</td>-->
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="no-data">No sellers found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- JavaScript for the pop-up confirmation -->
+<script>
+    function confirmDelete(event) {
+        event.preventDefault(); // Prevent the default behavior of the icon (if any)
+        var confirmation = confirm("Are you sure you want to delete this user?");
+        if (confirmation) {
+            // Add the delete action here (e.g., removing the row, sending a delete request, etc.)
+            alert("User deleted successfully!");
+            // If you want to actually delete the row from the table:
+            var row = event.target.closest("tr");
+            row.remove();
+        } else {
+            alert("User deletion canceled.");
+        }
+    }
+</script>
+
+</body>
+<script src="index.js"></script>
+
+</html>
+

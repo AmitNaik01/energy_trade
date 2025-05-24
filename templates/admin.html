@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<body>
+    <style>
+                .icons56785{
+            background-color: rgb(51, 51, 51);
+            color: white !important;
+            cursor: pointer;
+        }
+        .gg1 {
+    padding: 20px;
+    width: 80% !important;
+}
+
+.graph-title{
+  color: black;
+  font-size: 17px;
+  font-weight: 600;
+}
+.earn-content{
+  color: rgb(49, 194, 49);
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.canva-center{
+  height: 250px;
+  display: flex;
+  justify-content: center;
+}
+
+.saller-dashboard-sec-section{
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  gap: 10px;
+}
+
+.sdss-first{
+  width:30%;
+  border: 1px solid rgba(128, 128, 128, 0.418);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.energy-saveing-ssdss-first{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+}
+
+.this-months-btn{
+  background-color: rgb(29, 155, 29);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+.ssdsss-first-image{
+  width: 100%;
+  padding: 20px;
+}
+
+.ssdsss-first-image img{
+  width: 100%;
+}
+
+.ssdss-first-content{
+  text-align: center;
+  color: black;
+}
+
+.sdss-sec{
+  width: 33.33%;
+  border: 1px solid rgba(128, 128, 128, 0.418);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.sdss-sec canvas{
+  height: 400px;
+}
+
+.sdss-three{
+  width: 36.33%;
+  border: 1px solid rgba(128, 128, 128, 0.418);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.rec-trad-sub{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.nam-profike{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nam-profike img{
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid gray;
+  margin-right: 10px;
+}
+
+.profile-name p{
+  margin: 0px;
+}
+
+.sold-btn p{
+  background-color: rgb(31, 151, 31);
+  padding: 10px;
+  color: white;
+}
+
+@media screen and (max-width: 790px){
+  .gg1 {
+    padding: 10px;
+    width: 100% !important;
+}
+.saller-dashboard-sec-section{
+  display: block;
+}
+.sdss-first{
+  width: 100%;
+  margin-bottom: 10px;
+}
+.sdss-sec{
+  width: 100%;
+  margin-bottom: 10px;
+}
+.sdss-three{
+  width: 100%;
+}
+.saller-dashboard-sec-section{
+  padding: 0px;
+}
+.all-tiel-box-conetn {
+        display: flex
+;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .w3-container, .w3-panel{
+      padding: 5px;
+    }
+}
+    </style>
+
+<!-- Sidebar -->
+{% include "includes/admin_sidebar.html" %}
+
+<!-- Page Content -->
+<div class="side-div-section24" >
+  <div class="w3-container w3-teal">
+    <div><h1>Logo</h1></div>
+
+
+    <div class="logo-left-icons">
+      <i class="material-icons">&#xe001;</i>
+      <i class="material-icons">&#xe1ac;</i>
+      <i class="material-icons">&#xe853;</i>
+    </div>
+
+    <!-- Hamburger Menu (Visible in mobile view) -->
+    <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
+  </div>
+
+
+  <div class="w3-container">
+    <div class="top-das-grap-detai">
+        <div class="tdgd-box">
+            <div class="tdgd-icon bb"><i style="font-size:24px" class="fa">&#xf240;</i></div>
+            <div class="tdgd-content-box">
+                <p class="tdgd-con-num">{{ total_energy_consumed }} kwh</p>
+                <p class="tdgd-con-con">Energy Consumed</p>
+            </div>
+        </div>
+        <div class="tdgd-box">
+            <div class="tdgd-icon uu"><i class="material-icons">&#xe853;</i></div>
+            <div class="tdgd-content-box">
+                <p class="tdgd-con-num">{{ total_users }}</p>
+                <p class="tdgd-con-con">Total Users</p>
+            </div>
+        </div>
+        <div class="tdgd-box">
+            <div class="tdgd-icon pp"><i style="font-size:24px" class="fa">&#xf1e6;</i></div>
+            <div class="tdgd-content-box">
+                <p class="tdgd-con-num">{{ total_energy_saved }} kWh</p>
+                <p class="tdgd-con-con">Total Energy Saved</p>
+            </div>
+        </div>
+        <div class="tdgd-box">
+            <div class="tdgd-icon ww"><i class="material-icons">&#xe850;</i></div>
+            <div class="tdgd-content-box">
+                <p class="tdgd-con-num"> € {{ earning }}</p>
+                <p class="tdgd-con-con">Earning</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="graphic-container">
+       <div class="graphic-box gg1">
+        <div><p class="graph-title">Energy Consumed</p><b>11.2%</b></div>
+        <canvas id="myChart" style="width:100%;max-width:600px"></canvas>
+       </div>
+
+       <div class="graphic-box">
+        <div><p class="graph-title">Total Revenue</p></div>
+       <div class="canva-center"> <canvas id="myChart1" style="width:100%;max-width:250px"></canvas></div>
+        <p class="earn-content">you have earned ₹1288 this month</p>
+       </div>
+
+    </div>
+
+   <div class="saller-dashboard-sec-section">
+
+   <div class="graphic-box">
+        <div><p class="graph-title">Total Trades</p></div>
+       <div class="">  <canvas id="tradesChart"></canvas></div>
+
+       </div>
+
+
+    <div class="sdss-three">
+      <div><p class="graph-title">Recent Trade</p></div>
+
+      <div class="recent-trade">
+          {% for trade in recent_trades %}
+        <div class="rec-trad-sub">
+          <div class="nam-profike">
+            <img src="https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2220431045.jpg" alt="">
+            <div class="profile-name">
+              <p class="pro-name-ssdss-tr">{{ trade.seller.username }}</p>
+              <p class="pro-content-ssdss-tr">{{ trade.seller.email }}</p>
+            </div>
+          </div>
+          <div class="sold-btn">
+            <p>Sold - {{ trade.proposal.energy_ask }}kwh</p>
+          </div>
+        </div>
+          {% endfor %}
+
+      </div>
+    </div>
+   </div>
+
+
+    </div>
+</div>
+
+
+</body>
+<script>
+    const xValues = [100,200,300,400,500,600,700,800,900,1000];
+
+    new Chart("myChart", {
+      type: "line",
+      data: {
+        labels: xValues,
+        datasets: [{
+          data: [860,1140,1060,1060,1070,1110,1330,2210,7830,2478],
+          borderColor: "#0F95FA",
+          fill: false
+        }, {
+          data: [1600,1700,1700,1900,2000,2700,4000,5000,6000,7000],
+          borderColor: "#00E396",
+          fill: false
+        }
+        ]
+      },
+      options: {
+        legend: {display: false}
+      }
+    });
+
+
+
+    const xValues1 = ["Italy", "France"];
+const yValues = [55, 49];
+const barColors = [
+  "#3B82F6",
+  "#959595",
+];
+
+// Custom plugin to draw text in the center
+Chart.plugins.register({
+  beforeDraw: function (chart) {
+    if (chart.config.options.elements.center) {
+      const ctx = chart.chart.ctx;
+      const centerConfig = chart.config.options.elements.center;
+      const fontStyle = centerConfig.fontStyle || "bold";
+      const fontFamily = centerConfig.fontFamily || "Arial";
+      const fontSize = centerConfig.fontSize || 20;
+      const fontColor = centerConfig.fontColor || "#000";
+      const text = centerConfig.text || "";
+      const x = chart.chart.width / 2;
+      const y = chart.chart.height / 2;
+
+      ctx.font = fontSize + "px " + fontFamily;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = fontColor;
+      ctx.fillText(text, x, y);
+    }
+  }
+});
+
+new Chart("myChart1", {
+  type: "doughnut",
+  data: {
+    datasets: [{
+      backgroundColor: barColors,
+      data: yValues
+    }]
+  },
+  options: {
+    cutout: "60%",  // Use this instead of cutoutPercentage
+    maintainAspectRatio: false,
+    elements: {
+      center: {
+        text: "€ {{ earning }}",  // ← Pull from Django backend
+        fontStyle: "bold",
+        fontColor: "#000",
+        fontSize: 16,
+        fontFamily: "Arial"
+      }
+    }
+  }
+});
+
+
+const xValues2 = ["100", "200", "300", "400", "500", "500", "500", "500", "500", "500", "500", "500"];
+const yValues2 = [55, 49, 44, 24, 15,55, 49, 44, 24, 15, 55, 49];
+const wineColors = ["#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff" , "#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff"];  // Renamed constant
+
+new Chart("myChart2", {
+  type: "bar",
+  data: {
+    labels: xValues2,
+    datasets: [{
+      backgroundColor: wineColors,  // Updated reference
+      data: yValues2
+    }]
+  },
+  options: {
+    legend: {display: false},
+  }
+});
+
+
+
+  const tradesLabels = JSON.parse('{{ trades_labels|safe }}');
+    const tradesData = JSON.parse('{{ trades_data|safe }}');
+
+    const ctx = document.getElementById('tradesChart').getContext('2d');
+    const tradesChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: tradesLabels,
+        datasets: [{
+          label: 'Trades per Day',
+          data: tradesData,
+          fill: false,
+          borderColor: 'rgb(75, 192, 192)',
+          tension: 0.3,
+          pointBackgroundColor: 'rgb(75, 192, 192)'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true },
+          tooltip: { enabled: true }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            precision: 0
+          }
+        }
+      }
+    });
+
+    </script>
+
+<script src="index.js"></script>
+</html>

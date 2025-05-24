@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<body>
+
+  <style>
+    .block-btn{
+      background-color: red !important;
+    }
+  </style>
+
+<!-- Sidebar -->
+<div class="w3-sidebar w3-light-grey w3-bar-block" id="mySidebar">
+    <span class="close-btn w3-button" style="color:rgb(0, 0, 0);">&times;</span> <!-- Close Button -->
+    <h3 class="w3-bar-item title-admin">Admin Dashboard</h3>
+    <a href="Deshboard.html" class="w3-bar-item w3-button"><span class="glyphicon">&#xe177;</span>Dashboard</a>
+    <a href="users.html" class="w3-bar-item w3-button"><span  class="fa">&#xf2bd;</span>Users</a>
+    <a href="Transactoins.html" class="w3-bar-item w3-button"><span  class="fa">&#xf0d6;</span>Transactions</a>
+    <a href="Energyanalytic.html" class="w3-bar-item w3-button"><span  class="fa">&#xf201;</span>Energy analytic</a>
+    <a href="Notification.html" class="w3-bar-item w3-button"><span  class="fa">&#xf0f3;</span>Notifications</a>
+    <a href="Report.html" class="w3-bar-item w3-button"><span  class="fa">&#xf080;</span>Reports</a>
+    <a href="systemsetting.html" class="w3-bar-item w3-button"><span  class="fa">&#xf185;</span>System Settings</a>
+    <a href="#" class="w3-bar-item w3-button log-out-btn"><span   class="glyphicon">&#xe163;</span>Log out</a>
+  </div>
+
+  <!-- Page Content -->
+  <div class="side-div-section24" >
+    <div class="w3-container w3-teal">
+      <div><h1>Logo</h1></div>
+
+      <div class="logo-left-icons">
+        <a href="index.html">signin</a>
+        <a href="register.html">signup</a>
+      </div>
+      <div class="logo-left-icons">
+        <i class="material-icons">&#xe001;</i>
+        <i class="material-icons">&#xe1ac;</i>
+        <i class="material-icons">&#xe853;</i>
+      </div>
+
+      <!-- Hamburger Menu (Visible in mobile view) -->
+      <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
+    </div>
+
+
+  <div class="w3-container">
+
+    <div class="all-users-container">
+      <div class="all-user-title-box-with-search">
+          <div class="all-user-deaceboarrd-search user-page-searchbar-box">
+              <p>USER 1</p>
+          </div>
+
+          <div class="all-tiel-box-conetn">
+              <a href="#" class="block-btn">Block User</a>
+          </div>
+      </div>
+  </div>
+
+<div class="add-user-container-main">
+    <div class="add-user-profile-icon">
+        <span  class="fa">&#xf2bd;</span>
+    </div>
+
+    <div class="add-user-profile-input-flex-box">
+        <div class="add-user-input-left-box">
+    <label for="">Name</label>
+<input type="text" value="user name">
+<label for="">Role</label>
+<input type="text" value="Buyer">
+<label for="">Adderess</label>
+<input type="text" value="123, ashok vihar, kalyan diamond 21, ajmer.....">
+        </div>
+
+        <div class="add-user-input-right-box">
+            <label for="">Email</label>
+        <input type="text" value="test1@gmail.com">
+        <label for="">Contact Number</label>
+        <input type="text" value="user 123">
+        <label for="">State</label>
+        <input type="text" value="Active">
+                </div>
+    </div>
+
+    <div class="add-user-btns">
+        <a href="#" class="add-user-cncl-btn">Cancel</a>
+        <a href="#" class="add-user-add-btn">Add User</a>
+    </div>
+</div>
+    </div>
+</div>
+
+
+</body>
+<script src="{% static 'index.js' %}"></script>
+
+
+</html>

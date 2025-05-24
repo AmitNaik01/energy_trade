@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+   <title></title>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+   <link rel="stylesheet" href="{% static 'index.css' %}">
+   <body>
+      <div>
+         <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="register-container">
+               <div style="text-align: left;">
+    <img
+        src="{% static 'images/85153216d87e7fbfcfa68192e56a3abb.png' %}"
+        alt="Image"
+        style="height:1050px; width:600px; object-fit: cover;"
+    >
+</div>
+
+               <div class="super-main-register-container">
+                  <div class="register-welcome-title">
+                     <p>Join our platform to trads surplus <b>renewable energy</b> effortlessly.</p>
+                  </div>
+                  <div class="register-content-box">
+                     <div class="register-input-flex-box">
+
+                        <label for="{{ form.email.id_for_label }}" class="register-lable">Email</label>
+                                 {{ form.email }}
+                                 {% if form.email.errors %}
+                                 <div class="text-danger">{{ form.email.errors }}</div>
+                                 {% endif %}
+                         <label for="{{ form.username.id_for_label }}" class="register-lable">User Name</label>
+                                 {{ form.username }}
+                                 {% if form.username.errors %}
+                                 <div class="text-danger">{{ form.username.errors }}</div>
+                                 {% endif %}
+
+                         <label for="{{ form.contact_no.id_for_label }}" class="register-lable">Contact Number</label>
+                                 {{ form.contact_no }}
+                                 {% if form.contact_no.errors %}
+                                 <div class="text-danger">{{ form.contact_no.errors }}</div>
+                                 {% endif %}
+
+                        <div>
+                             <label for="{{ form.address.id_for_label }}"  class="register-lable">Address</label>
+                                 {{ form.address }}
+                                 {% if form.address.errors %}
+                                 <div class="text-danger">{{ form.address.errors }}</div>
+                                 {% endif %}
+                        </div>
+
+                     </div>
+                     <div class="register-input-flex-box2">
+
+
+
+
+                                 <label for="{{ form.role.id_for_label }}" class="register-lable">Select Role</label>
+                                 {{ form.role }}
+                                 {% if form.role.errors %}
+                                 <div class="text-danger">{{ form.role.errors }}</div>
+                                 {% endif %}
+
+
+                             <label style="margin-top: 20px;" for="{{ form.password1.id_for_label }}" class="register-lable">Password</label>
+                                 {{ form.password1 }}
+                                 {% if form.password1.errors %}
+                                 <div class="text-danger">{{ form.password1.errors }}</div>
+                                 {% endif %}
+
+                         <div>
+                             <label for="{{ form.password2.id_for_label }}" class="register-lable">Confirm Password</label>
+                                 {{ form.password2 }}
+                                 {% if form.password2.errors %}
+                                 <div class="text-danger">{{ form.password2.errors }}</div>
+                                 {% endif %}
+                         </div>
+                         <div class="form-group">
+   <label class="register-lable" style="padding-right:20px">Captcha</label>
+   {{ form.captcha }}
+   {% if form.captcha.errors %}
+   <div class="text-danger">{{ form.captcha.errors }}</div>
+   {% endif %}
+</div>
+                     </div>
+                  </div>
+                  <div class="reg-btn-div"> <button class="register-btn">Submit</button></div>
+                  <p class="signup-somelines">Sign up today and start trading renewable energy for a greener tomorrow!</p>
+                  <div class="benifit-box">
+                     <h1>Benefit you will get</h1>
+                     <p><i class="material-icons">&#xe86c;</i>Sell your solar energy at competitives rates.</p>
+                     <p><i class="material-icons">&#xe86c;</i>purchase affordable renewable energy from trusted sellers.</p>
+                     <p><i class="material-icons">&#xe86c;</i>Contribute to a sustainable and eco-friendly community.</p>
+                  </div>
+               </div>
+            </div>
+         </form>
+      </div>
+   </body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+<title>Edit User Details</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="{% static 'index.css' %}">
+</head>
+<body>
+
+  <style>
+    .block-btn{
+      background-color: red !important;
+    }
+  </style>
+
+<!-- Sidebar -->
+{% include "includes/admin_sidebar.html" %}
+
+
+<!-- Page Content -->
+<div class="side-div-section24">
+  <div class="w3-container w3-teal">
+    <div><h1>Logo</h1></div>
+
+    <div class="logo-left-icons">
+      <a href="">signin</a>
+      <a href="">signup</a>
+    </div>
+    <div class="logo-left-icons">
+      <i class="material-icons">&#xe001;</i>
+      <i class="material-icons">&#xe1ac;</i>
+      <i class="material-icons">&#xe853;</i>
+    </div>
+
+    <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
+  </div>
+
+  <div class="w3-container">
+
+    <div class="all-users-container">
+      <div class="all-user-title-box-with-search">
+          <div class="all-user-deaceboarrd-search user-page-searchbar-box">
+              <p>Edit User: {{ user.username }}</p>
+          </div>
+
+          <div class="all-tiel-box-conetn">
+              <a href="" class="block-btn">Block User</a>
+          </div>
+      </div>
+    </div>
+
+<form method="POST" >
+    {% csrf_token %}
+
+    <div class="add-user-container-main">
+          <div class="add-user-profile-icon">
+            <span class="fa">&#xf2bd;</span>
+          </div>
+
+          <div class="add-user-profile-input-flex-box">
+            <div class="add-user-input-left-box">
+               <label for="id_username">Name</label>
+          {{ form.username }}
+              <label for="id_role">Role</label>
+          {{ form.role }}
+
+              <label for="id_address">Address</label>
+          {{ form.address }}
+            </div>
+
+            <div class="add-user-input-right-box">
+              <label for="id_email">Email</label>
+          {{ form.email }}
+              <label for="id_contact_no">Contact Number</label>
+          {{ form.contact_no }}
+              <label for="id_total_energy_saved">Energy Saved</label>
+          {{ form.total_energy_saved }}
+
+            </div>
+          </div>
+
+          <div class="add-user-btns" style="margin-top:20px;">
+          <a href="" class="add-user-cncl-btn">Cancel</a>
+          <button type="submit" class="add-user-add-btn btn btn-primary">Save Changes</button>
+        </div>
+    </div>
+</form>
+  </div>
+
+</div>
+
+<script src="{% static 'index.js' %}"></script>
+
+</body>
+</html>

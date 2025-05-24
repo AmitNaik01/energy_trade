@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<body>
+
+    <style>
+        .noti {
+            border: none !important;
+            color: white !important;
+            background-color: black !important;
+        }
+
+        .delete-btn {
+            display: none;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            background-color: red;
+            color:white;
+            border: none;
+            padding: 10px;
+        }
+
+    </style>
+
+<!-- Sidebar -->
+{% include "includes/admin_sidebar.html" %}
+
+
+<!-- Page Content -->
+<div class="side-div-section24" >
+    <div class="w3-container w3-teal">
+        <div><h1>Logo</h1></div>
+
+
+        <div class="logo-left-icons">
+            <i class="material-icons">&#xe001;</i>
+            <i class="material-icons">&#xe1ac;</i>
+            <i class="material-icons">&#xe853;</i>
+        </div>
+
+        <!-- Hamburger Menu (Visible in mobile view) -->
+        <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
+    </div>
+
+
+
+    <div class="w3-container">
+        <div class="add-user-page-box">
+            <p>Notifications</p>
+        </div>
+        <table class="section-table">
+            <tbody class="noti-m10">
+                <!-- Repeat this block for each user entry -->
+                <tr>
+                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>
+                    <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur blanditiis, minus rem inventore impedit quasi!</td>
+                    <td class="active5678 noti" onclick="showPopup('Notification 1 Details')">Open</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>
+                    <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur blanditiis, minus rem inventore impedit quasi!</td>
+                    <td class="active5678 noti" onclick="showPopup('Notification 2 Details')">Open</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>
+                    <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur blanditiis, minus rem inventore impedit quasi!</td>
+                    <td class="active5678 noti" onclick="showPopup('Notification 3 Details')">Open</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>
+                    <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur blanditiis, minus rem inventore impedit quasi!</td>
+                    <td class="active5678 noti" onclick="showPopup('Notification 4 Details')">Open</td>
+                </tr>
+                <tr>
+                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>
+                    <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur blanditiis, minus rem inventore impedit quasi!</td>
+                    <td class="active5678 noti" onclick="showPopup('Notification 5 Details')">Open</td>
+                </tr>
+                <!-- Add more rows as needed -->
+            </tbody>
+        </table>
+
+        <!-- Delete Button -->
+        <button id="deleteBtn" class="delete-btn" onclick="deleteSelectedRows()">Delete Selected</button>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="notificationModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Notification Details</h4>
+            </div>
+            <div class="modal-body">
+                <p id="modalContent">Notification content will be displayed here.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for the pop-up confirmation and delete -->
+<script>
+    // Function to show the delete button when a checkbox is selected
+    function toggleDeleteBtn() {
+        const checkboxes = document.querySelectorAll('.checkbox');
+        const deleteBtn = document.getElementById('deleteBtn');
+        let anyChecked = false;
+
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                anyChecked = true;
+            }
+        });
+
+        if (anyChecked) {
+            deleteBtn.style.display = 'block';
+        } else {
+            deleteBtn.style.display = 'none';
+        }
+    }
+
+    // Function to delete selected rows
+    function deleteSelectedRows() {
+        const checkboxes = document.querySelectorAll('.checkbox');
+        checkboxes.forEach((checkbox, index) => {
+            if (checkbox.checked) {
+                const row = checkbox.closest('tr');
+                row.remove();
+            }
+        });
+
+        // Hide the delete button after deletion
+        document.getElementById('deleteBtn').style.display = 'none';
+    }
+
+    // Function to show the modal with notification content
+    function showPopup(content) {
+        document.getElementById('modalContent').innerText = content; // Set the content of the modal
+        $('#notificationModal').modal('show'); // Show the modal
+    }
+</script>
+
+</body>
+<script src="index.js"></script>
+
+</html>

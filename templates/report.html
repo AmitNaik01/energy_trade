@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<body>
+
+    <style>
+ /* Apply transition to all elements for smooth animations */
+* {
+  transition: all 0.2s;
+}
+
+/* Style for the color wheel container */
+.colors-container {
+  height: 150px;
+  overflow: hidden;
+  width: 300px;
+}
+
+/* Create a colorful background using conic gradient */
+.color-wheel {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: conic-gradient(rgb(255, 238, 0), rgb(255, 5, 5) 90deg, rgb(31, 185, 0) 270deg, rgba(255, 208, 0, 0.89));
+}
+
+/* Main container for the meter */
+.meter {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Style for the knob */
+.knob {
+  width: 100px;
+  height: 100px;
+  position: absolute;
+  bottom: -50px;
+  left: 38%;
+  background: rgba(255,255,255,0.6);
+  border-radius: 50%;
+  box-shadow: 0px 5px 10px rgba(0,0,150,0.1),
+    inset -5px 5px 10px rgba(255,255,255,1);
+  backdrop-filter: blur(10px);
+  display: grid;
+  place-content: center;
+  transform: rotate(-90deg);
+}
+
+/* Style for the needle */
+.needle {
+  background: #fff;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  position: relative;
+  transform: rotate(30deg);
+  filter: drop-shadow(0px 0px 10px rgba(0,0,150,0.2));
+  transition: all 0.3s;
+}
+
+.needle2 {
+  background: #fff;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  position: relative;
+  transform: rotate(30deg);
+  filter: drop-shadow(0px 0px 10px rgba(0,0,150,0.2));
+  transition: all 0.3s;
+}
+
+/* Style for the pointer (part of the needle) */
+div.pointer {
+  background: #fff;
+  height: 100px;
+  width: 10px;
+  position: absolute;
+  bottom: 25px;
+  left: 20px;
+  border-radius: 50% 50% 0px 0px;
+}
+
+/* Style for the reading display */
+.reading {
+  font-size: 50px;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  font-family: arial;
+  font-weight: bold;
+  opacity: 1;
+  top: 30px;
+}
+
+.reading2 {
+  font-size: 50px;
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0px 5px 10px rgba(0,0,0,0.3);
+  font-family: arial;
+  font-weight: bold;
+  opacity: 0.2;
+  top: 30px;
+}
+
+.w3-container890{
+    padding:50px;
+}
+
+.meter-title{
+    font-size: 16px;
+    margin-bottom: 50px;
+    color: black;
+}
+
+.main-items-div{
+    display: flex;
+    justify-content: space-between;
+}
+
+.energy-analatics-num-div{
+    border: 1px solid rgb(219, 219, 219);
+    padding: 15px;
+    margin-top: 10px;
+    border-radius: 10px;
+}
+
+.eng-analtic-tiele{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #353535;
+    font-size: 15px;
+}
+
+.eng-analtic-num{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 40px;
+    font-weight: 700;
+    color: rgb(0, 0, 0);
+}
+
+.meater-div{
+    padding: 15px;
+    border-radius: 10px;
+}
+
+#myChart{
+    width: 100%;
+    display: flex;
+    justify-content: start;
+}
+
+.main-eng-div67{
+    display:flex;
+    gap:20px;
+}
+
+.arrow-report-page{
+    margin-left: 10px;
+    color: green !important;
+}
+
+.arrow-report-page2{
+    margin-left: 10px;
+    color: rgb(255, 0, 0) !important;
+}
+
+.chart{
+    border: 1px solid rgb(206, 206, 206);
+    width: 50%;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.meater-div{
+    border: 1px solid rgb(206, 206, 206);
+    width: 50%;
+}
+
+.report-meter-graph-box{
+    display: flex;
+    gap:20px;
+}
+
+.line-chat{
+    border:1px solid rgb(206, 206, 206);
+    margin-top: 20px;
+    border-radius: 10px;
+}
+
+@media screen and (max-width: 768px) {
+    .report-meter-graph-box {
+    display: block;
+}
+.chart{
+    display: none;
+    width: 100%;
+}
+.meater-div {
+    border: 1px solid rgb(206, 206, 206);
+    width: 100%;
+}
+.meater-div {
+    padding: 5px;
+    border-radius: 10px;
+}
+.meter-title {
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: black;
+}
+.reading{
+    font-size: 25px;
+}
+.color-wheel {
+    width: 234px;
+    height: 234px;}
+    .knob {
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    bottom: 10px;
+    left: 38%;}
+    .main-eng-div67{
+        display: block;
+    }
+    .w3-container890 {
+    padding: 20px;
+}
+}
+
+    </style>
+
+<!-- Sidebar -->
+{% include "includes/admin_sidebar.html" %}
+
+
+<!-- Page Content -->
+<div class="side-div-section24" >
+    <div class="w3-container w3-teal">
+        <div><h1>Logo</h1></div>
+
+
+        <div class="logo-left-icons">
+            <i class="material-icons">&#xe001;</i>
+            <i class="material-icons">&#xe1ac;</i>
+            <i class="material-icons">&#xe853;</i>
+        </div>
+
+        <!-- Hamburger Menu (Visible in mobile view) -->
+        <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
+    </div>
+
+
+
+    <div class="w3-container w3-container890">
+        <div class="add-user-page-box">
+            <p>Our Report</p>
+        </div>
+<div class="meter-div">
+    <div class="main-eng-div67">
+        <div class="energy-analatics-num-div">
+            <div class="eng-analtic-tiele">Total Capacity(MW)</div>
+            <div class="eng-analtic-num">634,000 <span class="arrow-report-page">&#11205;</span></div>
+        </div>
+        <div class="energy-analatics-num-div">
+            <div class="eng-analtic-tiele">Energy Production Efficiency</div>
+            <div class="eng-analtic-num">90.79% <span class="arrow-report-page">&#11205;</span></div>
+        </div>
+        <div class="energy-analatics-num-div">
+            <div class="eng-analtic-tiele">Number of sales</div>
+            <div class="eng-analtic-num">93.2 <span class="arrow-report-page2">&#11206;</span></div>
+        </div>
+        <div class="energy-analatics-num-div">
+            <div class="eng-analtic-tiele">Profit</div>
+            <div class="eng-analtic-num">$27.0k<span class="arrow-report-page">&#11205;</span></div>
+        </div>
+    </div>
+</div>
+
+    </div>
+
+    <div class="w3-container w3-container890">
+<div class="report-meter-graph-box">
+    <div class="chart">
+        <p class="meter-title">Sales Last 4 Week</p>
+        <canvas id="myChart" style="width:100%;max-width:600px"></canvas>
+    </div>
+
+    <div class="meater-div">
+        <p class="meter-title">System Frequency</p>
+        <div class="meter">
+            <!-- Displays the current reading value -->
+            <div class="reading">0</div>
+
+            <!-- Container for the color wheel background -->
+            <div class="colors-container">
+              <div class="color-wheel">
+              </div>
+            </div>
+
+            <!-- The knob and needle of the meter -->
+            <div class="knob">
+              <div class="needle">
+                <div class="pointer"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+    </div>
+        <div class="line-chat">
+        <div id="myChart2" style="width:100%; height:500px;"></div>
+    </div>
+    </div>
+</div>
+
+
+
+<!-- JavaScript for the pop-up confirmation and delete -->
+<script>
+
+// Select DOM elements
+let changeReadingBtn = document.querySelector(".change-reading-btn");
+let readingElement = document.querySelector(".reading");
+let needle = document.querySelector(".needle");
+
+// Uncomment this event listener to enable manual reading changes
+// changeReadingBtn.addEventListener("click", () => {
+//   changeReading();
+// });
+
+// Set an interval to change the reading every 200 milliseconds
+setInterval(() => {
+  changeReading();
+}, 200);
+
+// Function to change the reading and update the display
+function changeReading() {
+  // Generate a random reading between 0 and 180
+  let newReading = parseInt(Math.random() * 181);
+  console.log(newReading);
+
+  // Update the reading display
+  readingElement.innerText = newReading;
+
+  // Rotate the needle to reflect the new reading
+  needle.style.transform = `rotate(${newReading}deg)`;
+}
+
+
+const xValues = ["one", "two", "three"];
+const yValues = [55, 49, 44,];
+const barColors = [
+  "green",
+  "#gray",
+  "#2b5797",
+];
+
+new Chart("myChart", {
+  type: "doughnut",
+  data: {
+    datasets: [{
+      backgroundColor: barColors,
+      data: yValues
+    }]
+  },
+});
+
+
+google.charts.load('current', {'packages':['corechart']});
+google.charts.setOnLoadCallback(drawChart);
+
+function drawChart() {
+const data = google.visualization.arrayToDataTable([
+  ['Contry', 'Mhl'],
+  ['55',99],
+  ['49',49],
+  ['44',44],
+  ['24',24],
+  ['15',15]
+]);
+
+const options = {
+  title:'Sale Last 12 Months'
+};
+
+const chart = new google.visualization.BarChart(document.getElementById('myChart2'));
+  chart.draw(data, options);
+}
+
+</script>
+
+</body>
+<script src="index.js"></script>
+
+</html>

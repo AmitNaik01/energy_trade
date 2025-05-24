@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+   <title></title>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+   <link rel="stylesheet" href="{% static 'index.css' %}">
+   <body>
+      <style>
+         .block-user{
+         background-color: red !important;
+         }
+         .ad-user-some-flex-input{
+         display: flex;
+         justify-content: space-between;
+         }
+         .active-state-ad-us-details{
+         background: rgba(0, 128, 0, 0.342) !important;
+         width: 100px !important;
+         border: 1px solid green !important;
+         color: green !important;
+         }
+      </style>
+      <!-- Sidebar -->
+      {% include "includes/admin_sidebar.html" %}
+      <!-- Page Content -->
+      <div class="side-div-section24" >
+         <div class="w3-container w3-teal">
+            <div>
+               <h1>Logo</h1>
+            </div>
+<!--            <div class="logo-left-icons">-->
+<!--               <a href="signin.html">signin</a>-->
+<!--               <a href="register.html">signup</a>-->
+<!--            </div>-->
+            <div class="logo-left-icons">
+               <i class="material-icons">&#xe001;</i>
+               <i class="material-icons">&#xe1ac;</i>
+               <i class="material-icons">&#xe853;</i>
+            </div>
+            <!-- Hamburger Menu (Visible in mobile view) -->
+            <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
+         </div>
+         <div class="w3-container">
+            <div class="all-users-container">
+               <div class="all-user-title-box-with-search">
+                  <div class="all-user-deaceboarrd-search user-page-searchbar-box">
+                     <p>User1</p>
+                  </div>
+                  <div class="all-tiel-box-conetn">
+                     <a class="block-user" href="#">Block User</a>
+                  </div>
+               </div>
+            </div>
+            <div class="add-user-container-main">
+               <div class="add-user-profile-icon">
+                  <span  class="fa">&#xf2bd;</span>
+               </div>
+               <div class="add-user-profile-input-flex-box">
+  <div class="add-user-input-left-box">
+    <label for="">Name</label>
+    <input type="text" value="{{ user.username }}" readonly>
+
+    <label for="">Role</label>
+    <input type="text" value="{{ user.role }}" readonly>
+
+    <label for="">Address</label>
+    <input type="text" value="{{ user.address }}" readonly>
+
+    <label for="">State</label>
+    <input type="text" value="..." readonly>
+  </div>
+
+  <div class="add-user-input-right-box">
+    <label for="">Email</label>
+    <input type="text" value="{{ user.email }}" readonly>
+
+    <label for="">Contact Number</label>
+    <input type="text" value="{{ user.contact_no }}" readonly>
+
+    <div class="ad-user-some-flex-input">
+      <div>
+        <label for="">Total Energy consumed</label>
+        <input type="text" value="{{ user.total_energy_consumed }}" readonly>
+      </div>
+      <div>
+        <label for="">Total Energy saved</label>
+        <input type="text" value="{{ user.total_energy_saved }}" readonly>
+      </div>
+    </div>
+
+    <label for="">Status</label>
+    <input class="active-state-ad-us-details" type="text" value="{{ user.status }}" readonly>
+  </div>
+</div>
+
+            </div>
+         </div>
+      </div>
+   </body>
+   <script src="index.js"></script>
+</html>

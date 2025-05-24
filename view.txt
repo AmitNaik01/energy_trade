@@ -1,0 +1,581 @@
+from django.http import HttpResponseForbidden
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render, redirect
+from django.db.models import Case, When, Value, CharField
+from .forms import SignUpForm, LoginForm, UserEditForm
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, get_object_or_404
+# Create your views here.
+from .models import User, Proposal, Trade, Transaction
+from django.contrib import messages
+from django.views import View
+from django.contrib.auth import logout
+from django.utils import timezone
+from django.db.models import Sum, Count
+import json
+from django.db.models.functions import TruncDay
+from django.core.mail import send_mail
+from django.db import models
+from .utils import create_notification
+
+
+from .forms import ForgotPasswordForm, VerifyCodeForm, ResetPasswordForm
+import random
+from django.contrib.auth.hashers import make_password
+from django.http import JsonResponse
+
+
+def index(request):
+    return render(request, 'index.html')
+
+class LogoutOnGetView(View):
+    def get(self, request):
+        logout(request)
+        return redirect('login_view')
+
+def register(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            role = form.cleaned_data.get('role')
+
+            # Set role flags based on selected value
+            if role == 'Admin':
+                user.is_admin = True
+            elif role == 'Employee':
+                user.is_employee = True
+            elif role == 'Buyer':
+                user.is_customer = True
+
+            user.save()
+            return redirect('login_view')  # or wherever
+    else:
+        form = SignUpForm()
+    return render(request, 'register.html', {'form': form})
+def login_view(request):
+    form = LoginForm(request.POST or None)
+    msg = None
+    if request.method == 'POST':
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None and user.is_admin:
+                login(request, user)
+                return redirect('adminpage')
+            elif user is not None and user.is_customer:
+                login(request, user)
+                return redirect('buyer')
+            elif user is not None and user.is_employee:
+                login(request, user)
+                return redirect('seller')
+            else:
+                msg= 'invalid credentials'
+        else:
+            msg = 'error validating form'
+    return render(request, 'login.html', {'form': form, 'msg': msg})
+
+
+def admin(request):
+    # if not request.user.is_authenticated or not request.user.is_admin:
+    #     return HttpResponseForbidden("You are not authorized to view this page.")
+    return render(request, 'admin.html')
+
+def buyer(request):
+    return render(request,'buyer_dashboard.html')
+
+
+def seller(request):
+    return render(request,'seller-dashboard.html')
+
+
+def user_list(request):
+    users = User.objects.all()  # fetch all users
+    return render(request, 'user_list.html', {'users': users})
+
+def user_details(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    return render(request, 'admin-user-details.html', {'user': user})
+
+def edit_user_details(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+    else:
+        form = UserEditForm(instance=user)
+
+    return render(request, 'edit_user_details.html', {'form': form, 'user': user})
+
+
+def delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        user.delete()
+        return redirect('user_list')
+
+def transaction_page(request):
+    return render(request, 'transaction.html')
+
+def energyanalytic_page(request):
+    return render(request, 'energyanalytic.html')
+
+def notification_page(request):
+    return render(request, 'notification.html')
+
+def report_page(request):
+    return render(request, 'report.html')
+
+def systemsetting_page(request):
+    return render(request, 'systemsetting.html')
+
+def buyer_proposals_for_seller(request):
+    buyer_proposals = Proposal.objects.filter(type='BUY', status='Active').exclude(user=request.user)
+    return render(request, 'seller_proposal.html', {'proposals': buyer_proposals})
+
+def seller_proposals_for_buyer(request):
+    seller_proposals = Proposal.objects.filter(type='SELL', status='Active').exclude(user=request.user)
+    return render(request, 'buyer_proposal.html', {'proposals': seller_proposals})
+
+def your_proposals_seller(request):
+    your_proposals_seller = Proposal.objects.filter(user=request.user, type='SELL',)
+    return render(request, 'your_proposal_seller.html', {'proposals': your_proposals_seller})
+
+def your_proposals_buyer(request):
+    your_proposals_buyer = Proposal.objects.filter(user=request.user, type='BUY', )
+    return render(request, 'your_proposal_buyer.html', {'proposals': your_proposals_buyer})
+
+
+def create_buyer_proposal(request):
+    if request.method == 'POST':
+        # Ensure only buyers can access
+        if request.user.role != 'Buyer':
+            messages.error(request, "Only buyers can create buy proposals.")
+            return redirect('buyer_dashboard')
+
+        energy_ask = request.POST.get('energy_ask')
+        amount = request.POST.get('amount')
+        description = request.POST.get('description')
+
+        # Prevent duplicate active proposals
+        if Proposal.objects.filter(user=request.user, type='BUY', status='Active').exists():
+            messages.warning(request, "You already have an active buy proposal.")
+            return redirect('buyer_dashboard')
+
+        # Create new buyer proposal
+        Proposal.objects.create(
+            user=request.user,
+            type='BUY',
+            energy_ask=energy_ask,
+            amount=amount,
+            description=description,
+            status='Active',
+        )
+
+        messages.success(request, "Buy proposal created successfully.")
+        return redirect('seller_proposals_for_buyer')
+
+    return redirect('buyer_dashboard')
+
+
+
+def create_seller_proposal(request):
+    if request.method == 'POST':
+        energy_ask = request.POST.get('energy_ask')
+        amount = request.POST.get('amount')
+        description = request.POST.get('description')
+        user = request.user
+
+        Proposal.objects.create(
+            user=user,
+            type='SELL',
+            energy_ask=energy_ask,
+            amount=amount,
+            description=description,
+            status='Active',
+        )
+        return redirect('buyer_proposals_for_seller')
+
+
+
+def seller_process_trade(request):
+    if request.method == 'POST':
+        proposal_id = request.POST.get('proposal_id')
+        action = request.POST.get('action')
+
+        proposal = get_object_or_404(Proposal, id=proposal_id)
+
+        if action == 'accept':
+            # 1. Update proposal
+            proposal.status = 'Accepted'
+            proposal.save()
+
+            # 2. Create Transaction (for seller)
+            Transaction.objects.create(
+                user=request.user,
+                proposal=proposal,
+                transaction_type='SELL',  # or proposal.type if stored that way
+                status='Completed',
+                created_at=timezone.now()
+            )
+
+            # 3. Create Trade record (link buyer and seller)
+            Trade.objects.create(
+                buyer=proposal.user,         # proposer is buyer
+                seller=request.user,         # current user is seller
+                proposal=proposal,
+                status='Completed',
+                created_at=timezone.now()
+            )
+
+        elif action == 'reject':
+            proposal.status = 'Rejected'
+            proposal.save()
+
+        return redirect('buyer_proposals_for_seller')
+
+def buyer_process_trade(request):
+    if request.method == 'POST':
+        proposal_id = request.POST.get('proposal_id')
+        action = request.POST.get('action')
+
+        proposal = get_object_or_404(Proposal, id=proposal_id)
+
+        if action == 'accept':
+            # 1. Update proposal
+            proposal.status = 'Accepted'
+            proposal.save()
+
+            # 2. Create Transaction for buyer
+            Transaction.objects.create(
+                user=request.user,
+                proposal=proposal,
+                transaction_type='BUY',  # buyer transaction
+                status='Completed',
+                created_at=timezone.now()
+            )
+
+            # 3. Create Trade record (link buyer and seller)
+            Trade.objects.create(
+                buyer=request.user,        # current user is buyer
+                seller=proposal.user,      # proposer is seller
+                proposal=proposal,
+                status='Completed',
+                created_at=timezone.now()
+            )
+
+        elif action == 'reject':
+            proposal.status = 'Rejected'
+            proposal.save()
+
+        return redirect('seller_proposals_for_buyer')  # or whichever page shows proposals for buyer
+
+
+def buyer_transactions_view(request):
+    trades = Trade.objects.filter(buyer=request.user).select_related('seller', 'proposal').order_by('-created_at')
+
+    for trade in trades:
+        if trade.proposal.type == 'BUY':
+            trade.display_type = "Accepted & Sold by Seller"
+        elif trade.proposal.type == 'SELL':
+            trade.display_type = "Accepted & Bought by Buyer"
+        else:
+            trade.display_type = trade.proposal.type
+
+    context = {'trades': trades}
+    return render(request, 'buyer_transaction.html', context)
+
+def seller_transactions_view(request):
+    trades = Trade.objects.filter(seller=request.user).select_related('buyer', 'proposal').order_by('-created_at')
+
+    for trade in trades:
+        if trade.proposal.type == 'SELL':
+            trade.display_type = "Accepted & Bought by Buyer"
+        elif trade.proposal.type == 'BUY':
+            trade.display_type = "Accepted & Sold by Seller"
+        else:
+            trade.display_type = trade.proposal.type
+
+    context = {'trades': trades}
+    return render(request, 'seller_transaction.html', context)
+
+
+def admin_transactions_view(request):
+    trades = Trade.objects.select_related('buyer', 'seller', 'proposal').annotate(
+        display_type=Case(
+            When(proposal__type='BUY', then=Value('BUY - Accepted & Sold by Seller')),
+            When(proposal__type='SELL', then=Value('SELL - Accepted & Bought by Buyer')),
+            default=Value('Unknown'),
+            output_field=CharField(),
+        )
+    ).order_by('-created_at')
+
+    context = {'trades': trades}
+    return render(request, 'admin_transactions.html', context)
+
+
+
+#
+# def dashboard_view(request):
+#     # Example aggregates (adjust field names)
+#     total_energy_consumed = User.objects.aggregate(total=Sum('total_energy_consumed'))['total'] or 0
+#     total_energy_saved = User.objects.aggregate(total=Sum('total_energy_saved'))['total'] or 0
+#     total_users = User.objects.count()
+#     total_earnings = Trade.objects.aggregate(total=Sum('amount'))['total'] or 0
+#
+#     # Example data for charts (you should replace with your own business logic)
+#     energy_trade_data = list(
+#         Trade.objects.filter(proposal__type='SELL')
+#         .values_list('energy_ask', flat=True)
+#     )
+#     energy_consumed_data = list(
+#         User.objects.values_list('total_energy_consumed', flat=True)
+#     )
+#
+#     context = {
+#         'total_energy_consumed': total_energy_consumed,
+#         'total_energy_saved': total_energy_saved,
+#         'total_users': total_users,
+#         'total_earnings': total_earnings,
+#         'energy_trade_data': energy_trade_data,
+#         'energy_consumed_data': energy_consumed_data,
+#         # add other chart data as needed
+#     }
+#     return render(request, 'admin.html', context)
+
+def dashboard_view(request):
+    # 1. Trades count per day (last 10 days)
+    trades_per_day_qs = (
+        Trade.objects
+        .annotate(day=TruncDay('created_at'))
+        .values('day')
+        .annotate(count=Count('id'))
+        .order_by('-day')[:10]
+    )
+    trades_per_day_qs = reversed(list(trades_per_day_qs))
+
+    trades_labels = [item['day'].strftime('%Y-%m-%d') for item in trades_per_day_qs]
+    trades_data = [item['count'] for item in trades_per_day_qs]
+
+    # 2. Total users count
+    total_users = User.objects.count()
+
+    # 3. Total energy consumed
+    total_energy_consumed = Proposal.objects.aggregate(total=Sum('energy_ask'))['total'] or 0
+
+    # 4. Total energy saved
+    total_energy_saved = User.objects.aggregate(total=Sum('total_energy_saved'))['total'] or 0
+
+    # 5. Earnings
+    earning = Proposal.objects.aggregate(total=Sum('amount'))['total'] or 0
+
+    # ✅ 6. Recent trades with user info and amount
+    recent_trades = (
+        Trade.objects
+        .select_related('seller')  # Adjust if using `buyer` instead
+        .order_by('-created_at')[:5]
+    )
+
+    context = {
+        'trades_labels': json.dumps(trades_labels),
+        'trades_data': json.dumps(trades_data),
+        'total_users': total_users,
+        'total_energy_consumed': total_energy_consumed,
+        'total_energy_saved': total_energy_saved,
+        'earning': earning,
+        'recent_trades': recent_trades,
+    }
+    return render(request, 'admin.html', context)
+
+#
+# @csrf_exempt
+# def forgot_password(request):
+#     if request.method == 'POST':
+#         email = request.POST.get('email')
+#         try:
+#             user = User.objects.get(email=email)
+#             code = str(random.randint(100000, 999999))
+#             user.reset_code = code
+#             user.save()
+#             send_mail(
+#                 'Password Reset Code',
+#                 f'Your reset code is {code}',
+#                 'gestione-cer@sbamsas.eu',
+#                 [email],
+#                 fail_silently=False
+#             )
+#             return JsonResponse({'status': 'success', 'message': 'Code sent'})
+#         except User.DoesNotExist:
+#             return JsonResponse({'status': 'error', 'message': 'User not found'})
+#     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+#
+# @csrf_exempt
+# def verify_reset_code(request):
+#     if request.method == 'POST':
+#         try:
+#             data = json.loads(request.body)
+#             email = data.get('email')
+#             code = data.get('code')
+#         except json.JSONDecodeError:
+#             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+#
+#         try:
+#             user = User.objects.get(email=email)
+#             if user.reset_code == code:
+#                 return JsonResponse({'status': 'success', 'message': 'Code verified'})
+#             else:
+#                 return JsonResponse({'status': 'error', 'message': 'Invalid code'})
+#         except User.DoesNotExist:
+#             return JsonResponse({'status': 'error', 'message': 'User not found'})
+#     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+# @csrf_exempt
+# def reset_password(request):
+#     if request.method == 'POST':
+#         try:
+#             data = json.loads(request.body)
+#             email = data.get('email')
+#             code = data.get('code')
+#             new_password = data.get('new_password')
+#
+#             if not all([email, code, new_password]):
+#                 return JsonResponse({'status': 'error', 'message': 'Missing fields'}, status=400)
+#
+#             try:
+#                 user = User.objects.get(email=email)
+#                 if user.reset_code == code:
+#                     user.set_password(new_password)
+#                     user.reset_code = None  # Optional: clear the code after use
+#                     user.save()
+#                     return JsonResponse({'status': 'success', 'message': 'Password reset successful'})
+#                 else:
+#                     return JsonResponse({'status': 'error', 'message': 'Invalid code'})
+#             except User.DoesNotExist:
+#                 return JsonResponse({'status': 'error', 'message': 'User not found'})
+#         except json.JSONDecodeError:
+#             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+#
+#     return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)#
+def forgot_password_view(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        try:
+            user = User.objects.get(email=email)
+            code = str(random.randint(100000, 999999))
+            user.reset_code = code
+            user.save()
+            send_mail(
+                'Password Reset Code',
+                f'Your reset code is {code}',
+                'gestione-cer@sbamsas.eu',
+                [email],
+                fail_silently=False,
+            )
+            request.session['reset_email'] = email  # Save email in session
+            messages.success(request, 'Reset code sent to your email')
+            return redirect('verify_code')
+        except User.DoesNotExist:
+            messages.error(request, 'Email not found')
+    return render(request, 'forgot_password.html')
+
+
+def verify_code_view(request):
+    if request.method == 'POST':
+        email = request.session.get('reset_email')
+        code = request.POST.get('code')
+        try:
+            user = User.objects.get(email=email)
+            if user.reset_code == code:
+                messages.success(request, 'Code verified! Please reset your password.')
+                return redirect('reset_password')
+            else:
+                messages.error(request, 'Invalid code')
+        except User.DoesNotExist:
+            messages.error(request, 'Session expired. Please start over.')
+            return redirect('forgot_password')
+    return render(request, 'verify_code.html')
+
+
+def reset_password_view(request):
+    if request.method == 'POST':
+        email = request.session.get('reset_email')
+        password = request.POST.get('password')
+        password2 = request.POST.get('password2')
+        if password != password2:
+            messages.error(request, 'Passwords do not match')
+            return redirect('reset_password')
+
+        try:
+            user = User.objects.get(email=email)
+            user.set_password(password)
+            user.reset_code = ''
+            user.save()
+            messages.success(request, 'Password reset successful! You can now log in.')
+            # Optionally clear session here
+            request.session.pop('reset_email', None)
+            return redirect('login_view')  # Replace 'login' with your login URL name
+        except User.DoesNotExist:
+            messages.error(request, 'Session expired. Please start over.')
+            return redirect('forgot_password')
+    return render(request, 'reset_password.html')
+
+
+
+def seller_buyers_view(request):
+    seller = request.user
+
+    trades = Trade.objects.filter(seller_id=seller.id)
+    buyer_ids = trades.values_list('buyer_id', flat=True).distinct()
+
+    buyers_data = []
+    for buyer_id in buyer_ids:
+        buyer = User.objects.get(id=buyer_id)
+        total_energy_sold = trades.filter(buyer_id=buyer_id).aggregate(
+            total_energy=Sum('proposal__energy_ask')
+        )['total_energy'] or 0.0
+
+        buyers_data.append({
+            'name': buyer.username,
+            'email': buyer.email,
+            'address': buyer.address,
+            'contact_no': buyer.contact_no,
+            'status': buyer.status,
+            'energy_sold': total_energy_sold
+        })
+
+    context = {
+        'buyers_data': buyers_data
+    }
+    return render(request, 'seller_buyer_list.html', context)
+
+def buyer_seller_list_view(request):
+    buyer = request.user  # Get the logged-in buyer
+
+    # Find all trades where this user is the buyer
+    trades = Trade.objects.filter(buyer_id=buyer.id)
+
+    # Get distinct seller IDs from these trades
+    seller_ids = trades.values_list('seller_id', flat=True).distinct()
+
+    sellers_data = []
+    for seller_id in seller_ids:
+        seller = User.objects.get(id=seller_id)
+        # Calculate total energy bought from this seller
+        total_energy = trades.filter(seller_id=seller_id).aggregate(total_sold=models.Sum('proposal__amount'))['total_sold'] or 0
+
+        sellers_data.append({
+            'name': seller.username,
+            'email': seller.email,
+            'address': seller.address,
+            'energy_bought': total_energy,
+            'contact_no': seller.contact_no,
+            'status': seller.status,
+        })
+
+    context = {
+        'sellers_data': sellers_data,
+    }
+    return render(request, 'buyer_seller_list.html', context)

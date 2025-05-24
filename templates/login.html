@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+   <title></title>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+   <link rel="stylesheet" href="{% static 'index.css' %}">
+   <body>
+      <style>
+         .pages-dashboard-selection a{
+         background-color: rgb(90, 90, 255);
+         color: white;
+         padding: 10px 40px;
+         border-radius: 10px;
+         }
+      </style>
+      <div>
+         <form  method="post">
+            {% csrf_token %}
+            <div class="signin-container">
+               <div class="signin-content-box">
+                  <p class="signin-welcome-title">Welcome back !!!</p>
+                  <p class="signin-title">Sign in</p>
+                  <p class="signin-lable">User Name</p>
+                  {{ form.username }}
+                  <p class="signin-lable">Password</p>
+                  {{ form.password }}
+                  <p class="signin-lable" style="padding-right:20px">Captcha</p>
+                  {{ form.captcha }}
+                  <p class="signin-forgetpassword"><a href="{% url 'forgot_password' %}" class="pa-das-section-btn">Forgot Password</a></p>
+                  <div>
+                     <input type="submit" value="Log In" class="btn btn-pill text-white btn-block btn-primary">
+                     <a href="{% url 'register' %}" style="    border: none;
+    background-color: #00B02F;
+    color: white;
+    padding: 10px 35px;
+    text-transform: uppercase;
+    border-radius: 10px;
+    font-size: 17px;"> Register</a>
+                  </div>
+               </div>
+               <div class="signin-image-box">
+                  <img src="{% static 'images/f9d173c38eeebcbdcb0376086b03f324.png' %}" alt="Image">
+               </div>
+            </div>
+         </form>
+      </div>
+   </body>
+</html>

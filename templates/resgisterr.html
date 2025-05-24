@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+  <head>
+    <title>Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" href="{% static 'index.css' %}">
+  </head>
+  <body>
+
+    <div class="register-container">
+      <div class="register-image-box">
+        <!-- Image or content here -->
+      </div>
+
+      <form method="post" novalidate style="display: flex; width: 100%;">
+        {% csrf_token %}
+        <div class="super-main-register-container">
+
+          <div class="register-welcome-title">
+            <p>Join our platform to trads <b>surplus renewable energy</b> effortlessly.</p>
+          </div>
+
+          <div class="register-content-box">
+
+            <div class="register-input-flex-box">
+              <p class="register-lable">Username</p>
+              {{ form.username }}
+              {% if form.username.errors %}
+                <div class="text-danger">{{ form.username.errors }}</div>
+              {% endif %}
+
+              <p class="register-lable">Email</p>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <div class="text-danger">{{ form.email.errors }}</div>
+              {% endif %}
+
+              <p class="register-lable">Contact Number</p>
+              {{ form.contact_no }}
+              {% if form.contact_no.errors %}
+                <div class="text-danger">{{ form.contact_no.errors }}</div>
+              {% endif %}
+
+              <p class="register-lable">Address</p>
+              {{ form.address }}
+              {% if form.address.errors %}
+                <div class="text-danger">{{ form.address.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="register-input-flex-box2">
+              <p class="register-lable">Select Your Role</p>
+              {{ form.role }}
+              {% if form.role.errors %}
+                <div class="text-danger">{{ form.role.errors }}</div>
+              {% endif %}
+
+              <p class="register-lable">Password</p>
+              {{ form.password1 }}
+              {% if form.password1.errors %}
+                <div class="text-danger">{{ form.password1.errors }}</div>
+              {% endif %}
+
+              <p class="register-lable">Confirm Password</p>
+              {{ form.password2 }}
+              {% if form.password2.errors %}
+                <div class="text-danger">{{ form.password2.errors }}</div>
+              {% endif %}
+            </div>
+
+
+          </div>
+
+
+          <div class="reg-btn-div">
+            <button class="register-btn" type="submit">Submit</button>
+          </div>
+      </form>
+
+      <p class="signup-somelines">Sign up today and start trading renewable energy for a greener tomorrow!</p>
+
+      <div class="benifit-box">
+        <h1>Benefit you will get</h1>
+        <p><i class="material-icons">&#xe86c;</i>Sell your solar energy at competitive rates.</p>
+        <p><i class="material-icons">&#xe86c;</i>Purchase affordable renewable energy from trusted sellers.</p>
+        <p><i class="material-icons">&#xe86c;</i>Contribute to a sustainable and eco-friendly community.</p>
+      </div>
+    </div>
+
+  </body>
+</html>

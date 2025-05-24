@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Invoice #{{ trade.id }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { text-align: center; }
+        .details { margin-bottom: 20px; }
+        .details div { margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #333; }
+    </style>
+</head>
+<body>
+    <h1>Invoice #{{ trade.id }}</h1>
+
+    <div class="details">
+        <div><strong>Date:</strong> {{ trade.created_at|date:"M d, Y, h:i A" }}</div>
+        <div><strong>Buyer:</strong> {{ buyer.username }} ({{ buyer.email }})</div>
+        <div><strong>Seller:</strong> {{ seller.username }} ({{ seller.email }})</div>
+        <div><strong>Status:</strong> {{ trade.status }}</div>
+        <div><strong>Proposal Type:</strong> {{ proposal.type }}</div>
+        <!-- Add any other proposal details here -->
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Transaction ID</th>
+                <th>Ref Id (Buyer Username)</th>
+                <th>Date and Time</th>
+                <th>From (Seller Email)</th>
+                <th>Type</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ trade.id }}</td>
+                <td>{{ buyer.username }}</td>
+                <td>{{ trade.created_at|date:"M d, Y, h:i A" }}</td>
+                <td>{{ seller.email }}</td>
+                <td>{{ trade.display_type }}</td>
+                <td>{{ trade.status }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Thank you for your business!</p>
+</body>
+</html>

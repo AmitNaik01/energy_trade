@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<link rel="stylesheet" href="{% static 'index.css' %}">
+
+    <style>
+        .noti {
+            border: none !important;
+            color: white !important;
+            background-color: black !important;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            display: none;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 10px;
+        }
+
+        /* Optional styling for table */
+        .section-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .section-table th, .section-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .section-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+{% include "includes/buyer_sidebar.html" %}
+
+<!-- Page Content -->
+<div class="side-div-section24">
+    <div class="w3-container w3-teal">
+        <div><h1>Logo</h1></div>
+
+        <div class="logo-left-icons">
+            <a href="index.html">signin</a>
+            <a href="register.html">signup</a>
+        </div>
+        <div class="logo-left-icons">
+            <i class="material-icons">&#xe001;</i>
+            <i class="material-icons">&#xe1ac;</i>
+            <i class="material-icons">&#xe853;</i>
+        </div>
+
+        <!-- Hamburger Menu (Visible in mobile view) -->
+        <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
+    </div>
+
+    <div class="w3-container">
+        <div class="add-user-page-box">
+            <p>Notifications</p>
+        </div>
+
+        {% if notifications %}
+        <table class="section-table">
+            <thead>
+                <tr>
+<!--                    <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>-->
+<!--                    <th>#</th>-->
+<!--                    <th>Type</th>-->
+                    <th>Message</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody class="noti-m10">
+                {% for notification in notifications %}
+                <tr>
+<!--                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>-->
+<!--                    <td>{{ forloop.counter }}</td>-->
+<!--                    <td>{{ notification.type|title }}</td>-->
+                    <td>{{ notification.message }}</td>
+                    <td>{{ notification.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <button class="noti"
+                            onclick="showPopup(
+                                `{{ notification.message|escapejs }}<br><br>
+                                {% if notification.data %}
+                                    <ul style='list-style:none; padding-left:0; margin:0;'>
+                                    {% for key, value in notification.data.items %}
+                                        <li><strong>{{ key|capfirst }}:</strong> {{ value }}</li>
+                                    {% endfor %}
+                                    </ul>
+                                {% else %}
+                                    -
+                                {% endif %}
+                                `)">
+                            Open
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Delete Button -->
+        <button id="deleteBtn" class="delete-btn" onclick="deleteSelectedRows()">Delete Selected</button>
+        {% else %}
+        <p>No notifications to show.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="notificationModal" class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+                <h4 class="modal-title">Notification Details</h4>
+            </div>
+            <div class="modal-body">
+                <p id="modalContent">Notification content will be displayed here.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for popup and delete -->
+<script>
+    // Show or hide the delete button when checkboxes change
+    function toggleDeleteBtn() {
+        const checkboxes = document.querySelectorAll('.checkbox');
+        const deleteBtn = document.getElementById('deleteBtn');
+        let anyChecked = false;
+
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                anyChecked = true;
+            }
+        });
+
+        deleteBtn.style.display = anyChecked ? 'block' : 'none';
+    }
+
+    // Select or deselect all checkboxes
+    function toggleSelectAll(source) {
+        const checkboxes = document.querySelectorAll('.checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = source.checked;
+        });
+        toggleDeleteBtn();
+    }
+
+    // Delete selected rows from the table (frontend only)
+    function deleteSelectedRows() {
+        const checkboxes = document.querySelectorAll('.checkbox');
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const row = checkbox.closest('tr');
+                row.remove();
+            }
+        });
+        document.getElementById('deleteBtn').style.display = 'none';
+    }
+
+    // Show modal popup with HTML content
+    function showPopup(content) {
+        document.getElementById('modalContent').innerHTML = content;  // render HTML inside modal
+        $('#notificationModal').modal('show');
+    }
+</script>
+
+<script src="index.js"></script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Seller Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    section {
+      margin-bottom: 40px;
+    }
+    canvas {
+      max-width: 100%;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #f9f9f9;
+      border-left: 5px solid #007bff;
+    }
+    .summary p {
+      font-size: 18px;
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Seller Dashboard</h1>
+
+  <section class="summary">
+    <h2>Summary</h2>
+    <p>Energy Consumed: <span id="consumed">--</span> kWh</p>
+    <p>Energy Saved: <span id="saved">--</span> kWh</p>
+    <p>Energy Sold: <span id="sold">--</span> kWh</p>
+    <p>Earnings: ₹<span id="earnings">--</span></p>
+  </section>
+
+  <section>
+    <h2>Weekly Energy Usage</h2>
+    <canvas id="weeklyChart" width="600" height="250"></canvas>
+  </section>
+
+  <section>
+    <h2>Monthly Revenue</h2>
+    <canvas id="monthlyChart" width="600" height="250"></canvas>
+  </section>
+
+  <section>
+    <h2>Recent Trades</h2>
+    <ul id="tradesList">
+      <li>Loading...</li>
+    </ul>
+  </section>
+
+  <script>
+    async function loadDashboardData() {
+      const response = await fetch(window.location.href, {
+        headers: {
+          'x-requested-with': 'XMLHttpRequest'
+        }
+      });
+      const data = await response.json();
+
+      // Summary
+      document.getElementById('consumed').textContent = data.summary.energy_consumed;
+      document.getElementById('saved').textContent = data.summary.energy_saved;
+      document.getElementById('sold').textContent = data.summary.energy_sold;
+      document.getElementById('earnings').textContent = data.summary.earnings;
+
+      // Weekly Chart
+      const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+      new Chart(weeklyCtx, {
+        type: 'bar',
+        data: {
+          labels: data.weekly_energy_usage.labels,
+          datasets: [
+            {
+              label: 'Consumed',
+              data: data.weekly_energy_usage.consumed,
+              backgroundColor: 'rgba(255, 99, 132, 0.6)'
+            },
+            {
+              label: 'Saved',
+              data: data.weekly_energy_usage.saved,
+              backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top'
+            }
+          }
+        }
+      });
+
+      // Monthly Chart
+      const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+      new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+          labels: data.monthly_revenue.labels,
+          datasets: [{
+            label: 'Revenue (₹)',
+            data: data.monthly_revenue.revenue,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            fill: false,
+            tension: 0.3
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top'
+            }
+          }
+        }
+      });
+
+      // Recent Trades
+      const tradesList = document.getElementById('tradesList');
+      tradesList.innerHTML = ''; // Clear "Loading..."
+      data.recent_trades.forEach(trade => {
+        const item = document.createElement('li');
+        item.textContent = `${trade.name} (${trade.email}) - ${trade.trade} - ${trade.amount}`;
+        tradesList.appendChild(item);
+      });
+    }
+
+    // Load data on page load
+    loadDashboardData();
+  </script>
+</body>
+</html>
