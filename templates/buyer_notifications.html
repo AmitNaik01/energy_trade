@@ -80,7 +80,7 @@
         </div>
 
         {% if notifications %}
-        <table class="section-table">
+        <table id="notificationsTable" class="section-table">
             <thead>
                 <tr>
 <!--                    <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>-->
@@ -190,6 +190,30 @@
         document.getElementById('modalContent').innerHTML = content;  // render HTML inside modal
         $('#notificationModal').modal('show');
     }
+</script>
+
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- DataTables CSS and JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#notificationsTable').DataTable({
+            // default page length
+            pageLength: 5,
+            // rows per page options
+            lengthMenu: [5, 10, 25, 50, 100],
+            // disable initial ordering so rows appear as sent from backend or customize
+            order: [],
+            language: {
+                search: "Search:"
+            }
+        });
+    });
 </script>
 
 <script src="index.js"></script>

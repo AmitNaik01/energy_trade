@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'energy_trade.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'energy_trade',
+        'NAME': 'electricity',
         'USER': 'root',
         'PASSWORD': 'root',
         'HOST': 'localhost',

@@ -26,8 +26,6 @@
     <div class="w3-container w3-teal">
         <div><h1>Logo</h1></div>
 
-
-
         <div class="logo-left-icons">
             <i class="material-icons">&#xe001;</i>
             <i class="material-icons">&#xe1ac;</i>
@@ -43,37 +41,34 @@
     </div>
 
     <div class="transtaion-div">
-<!--        <div class="transtion-date-box">-->
-<!--            <p>Sep 9 2025 - Sep 15 2024</p>-->
-<!--        </div>-->
+        <form method="get" class="form-inline" style="margin: 15px; flex-wrap: wrap;">
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search by ID, Buyer, Seller..."
+                class="form-control" style="max-width: 200px; min-width: 200px; margin-right: 10px; margin-bottom: 5px;">
 
-<!--        <div class="transtion-exp-dow-div">-->
-<!--            <div class="exp-transtion-box">-->
-<!--                <p>Export CSV</p>-->
-<!--            </div>-->
+            <input type="date" name="start_date" value="{{ start_date }}"
+                class="form-control" style="max-width: 160px; min-width: 160px; margin-right: 10px; margin-bottom: 5px;">
 
-<!--            <div class="invoice-transtion-box">-->
-<!--                <p>Download invoice</p>-->
-<!--            </div>-->
-<!--        </div>-->
-        <form method="get" class="form-inline" style="margin: 15px;">
-    <input type="text" name="search" value="{{ search_query }}" placeholder="Search by ID, Buyer, Seller..."
-        class="form-control" style="max-width: 200px; min-width: 200px;">
+            <input type="date" name="end_date" value="{{ end_date }}"
+                class="form-control" style="max-width: 160px; min-width: 160px; margin-right: 10px; margin-bottom: 5px;">
 
-    <input type="date" name="start_date" value="{{ start_date }}"
-        class="form-control" style="max-width: 160px; min-width: 160px;">
+            <label for="rowsPerPageSelect" style="margin-right: 5px; align-self: center;">Rows per page:</label>
+            <select name="rows_per_page" id="rowsPerPageSelect" class="form-control" style="max-width: 100px; min-width: 100px; margin-right: 10px; margin-bottom: 5px;"
+                onchange="this.form.submit()">
+                <option value="10" {% if rows_per_page == 10 %}selected{% endif %}>10</option>
+                <option value="25" {% if rows_per_page == 25 %}selected{% endif %}>25</option>
+                <option value="50" {% if rows_per_page == 50 %}selected{% endif %}>50</option>
+                <option value="100" {% if rows_per_page == 100 %}selected{% endif %}>100</option>
+            </select>
 
-    <input type="date" name="end_date" value="{{ end_date }}"
-        class="form-control" style="max-width: 160px; min-width: 160px;">
+            <button type="submit" class="btn btn-primary" style="margin-bottom: 5px;">Filter</button>
+            <a href="{% url 'seller_transactions' %}" class="btn btn-secondary" style="margin-bottom: 5px;">Reset</a>
+        </form>
 
-    <button type="submit" class="btn btn-primary">Filter</button>
-    <a href="{% url 'seller_transactions' %}" class="btn btn-secondary">Reset</a>
-</form>
-        <div class="exp-transtion-box">
-    <a href="{% url 'export_trades_csv' %}" class="btn btn-success" style="text-decoration: none; color: white;">
-        Export CSV
-    </a>
-</div>
+        <div class="exp-transtion-box" style="margin: 15px;">
+            <a href="{% url 'export_trades_csv' %}" class="btn btn-success" style="text-decoration: none; color: white;">
+                Export CSV
+            </a>
+        </div>
     </div>
 
     <div class="w3-container">
@@ -89,31 +84,61 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-   <tbody>
-    {% for trade in trades %}
-    <tr>
-        <td>{{ trade.buyer.username }}</td> <!-- Ref Id -->
-        <td>{{ trade.id }}</td> <!-- Transaction Id -->
-        <td>{{ trade.created_at|date:"M d, Y, h:i A" }}</td>
-        <td>{{ trade.seller.email }}</td> <!-- From -->
-        <td>{{ trade.display_type }}</td>
-        <td class="active5678">{{ trade.status }}</td>
-        <td class="icons5678">
-                    <a href="{% url 'download_invoice' trade.id %}" class="btn btn-primary" target="_blank">
-    Download Invoice
-  </a>
-                </td>
-
-    </tr>
-    {% empty %}
-    <tr><td colspan="6">No transactions found.</td></tr>
-    {% endfor %}
-</tbody>
+            <tbody>
+                {% for trade in page_obj %}
+                <tr>
+                    <td>{{ trade.buyer.username }}</td> <!-- Ref Id -->
+                    <td>{{ trade.id }}</td> <!-- Transaction Id -->
+                    <td>{{ trade.created_at|date:"M d, Y, h:i A" }}</td>
+                    <td>{{ trade.seller.email }}</td> <!-- From -->
+                    <td>{{ trade.display_type }}</td>
+                    <td class="active5678">{{ trade.status }}</td>
+                    <td class="icons5678">
+                        <a href="{% url 'download_invoice' trade.id %}" class="btn btn-primary" target="_blank">
+                            Download Invoice
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">No transactions found.</td></tr>
+                {% endfor %}
+            </tbody>
         </table>
+
+        <div class="pagination mt-3">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1&rows_per_page={{ rows_per_page }}&search={{ search_query }}&start_date={{ start_date }}&end_date={{ end_date }}" aria-label="First">« First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&rows_per_page={{ rows_per_page }}&search={{ search_query }}&start_date={{ start_date }}&end_date={{ end_date }}" aria-label="Previous">‹ Prev</a>
+                    </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&rows_per_page={{ rows_per_page }}&search={{ search_query }}&start_date={{ start_date }}&end_date={{ end_date }}" aria-label="Next">Next ›</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&rows_per_page={{ rows_per_page }}&search={{ search_query }}&start_date={{ start_date }}&end_date={{ end_date }}" aria-label="Last">Last »</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
     </div>
 </div>
+
 <script>
-document.getElementById('searchInput').addEventListener('keyup', function() {
+document.getElementById('searchInput')?.addEventListener('keyup', function() {
     const query = this.value;
 
     fetch(`/seller/transactions/?q=${encodeURIComponent(query)}`)

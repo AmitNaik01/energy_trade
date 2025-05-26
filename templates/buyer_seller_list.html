@@ -54,15 +54,10 @@
     <div class="w3-container">
         <div class="all-users-container">
             <h1 class="saller-user-list-heading">Sellers list</h1>
-<!--            <div class="all-user-title-box-with-search">-->
-<!--                <div class="all-user-deaceboarrd-search user-page-searchbar-box">-->
-<!--                    <i style="font-size:24px" class="fa">&#xf002;</i>-->
-<!--                    <input type="search" class="user-page-searchbar" name="" id="" placeholder="Search">-->
-<!--                </div>-->
-<!--            </div>-->
+
         </div>
 
-        <table class="section-table">
+        <table id="proposalTable" class="section-table">
             <thead>
             <tr>
                 <th>Name</th>
@@ -112,6 +107,30 @@
         }
     }
 </script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- DataTables CSS and JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#proposalTable').DataTable({
+            // default page length
+            pageLength: 5,
+            // rows per page options
+            lengthMenu: [5, 10, 25, 50, 100],
+            // disable initial ordering so rows appear as sent from backend or customize
+            order: [],
+            language: {
+                search: " Search:"
+            }
+        });
+    });
+</script>
+
+
 
 </body>
 <script src="index.js"></script>

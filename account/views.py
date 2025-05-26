@@ -11,10 +11,10 @@ from django.contrib import messages
 from django.views import View
 from django.contrib.auth import logout
 from django.utils import timezone
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, F
 import json
 from django.core.mail import EmailMultiAlternatives
-from django.db.models.functions import TruncDay
+from django.db.models.functions import TruncDay, TruncDate
 from django.core.mail import send_mail
 from django.db import models
 from .utils import create_notification
@@ -27,6 +27,11 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
+from datetime import timedelta, datetime
+from django.utils.timezone import now
+from dateutil.relativedelta import relativedelta
+from decimal import Decimal
+
 
 
 from .forms import ForgotPasswordForm, VerifyCodeForm, ResetPasswordForm
@@ -72,22 +77,29 @@ def login_view(request):
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
-            if user is not None and user.is_admin:
-                login(request, user)
-                return redirect('adminpage')
-            elif user is not None and user.is_customer:
-                login(request, user)
-                return redirect('buyer')
-            elif user is not None and user.is_employee:
-                login(request, user)
-                return redirect('seller')
+
+            if user is not None:
+                if user.is_admin:
+                    login(request, user)
+                    return redirect('adminpage')
+                elif user.is_customer:
+                    login(request, user)
+                    return redirect('buyer')
+                elif user.is_employee:
+                    login(request, user)
+                    return redirect('seller')
+                else:
+                    msg = "User role not assigned. Please contact support."
             else:
-                msg= 'invalid credentials'
+                user_exists = User.objects.filter(username=username).exists()
+                if user_exists:
+                    msg = "Incorrect password. Please try again."
+                else:
+                    msg = "Username does not exist. Please check and try again."
         else:
-            msg = 'error validating form'
+            msg = "Error validating form data."
+
     return render(request, 'login.html', {'form': form, 'msg': msg})
-
-
 def admin(request):
     # if not request.user.is_authenticated or not request.user.is_admin:
     #     return HttpResponseForbidden("You are not authorized to view this page.")
@@ -99,122 +111,296 @@ def admin(request):
 
 # def seller(request):
 #     return render(request,'seller-dashboard.html')
+# def seller_dashboard(request):
+#     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#         # Aggregate total energy consumed and saved by all users
+#         total_consumed = User.objects.aggregate(total=Sum('total_energy_consumed'))['total'] or 0
+#         total_saved = User.objects.aggregate(total=Sum('total_energy_saved'))['total'] or 0
+#
+#         # Aggregate total energy sold and earnings where type='sell' and status='accepted' (case-insensitive)
+#         total_sold = Proposal.objects.filter(
+#             type__iexact='sell',
+#             status__iexact='accepted'
+#         ).aggregate(total=Sum('energy_ask'))['total'] or 0
+#
+#         # Total earnings from those sales
+#         earnings = Proposal.objects.filter(
+#             type__iexact='sell',
+#             status__iexact='accepted'
+#         ).aggregate(total=Sum('amount'))['total'] or 0
+#
+#         # Example static weekly data for charts (you can replace with dynamic queries)
+#         weekly_data = {
+#             'labels': ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+#             'consumed': [1500, 1000, 1200, 1100, 1300, 800, 900],
+#             'saved': [200, 150, 300, 100, 180, 120, 130],
+#         }
+#
+#         # Example static monthly revenue data for charts
+#         monthly_data = {
+#             'labels': ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+#             'revenue': [800, 1200, 950, 1100, 1288],
+#         }
+#
+#         # Fetch last 5 sell proposals (trades) ordered by creation date descending
+#         trades = Proposal.objects.filter(type__iexact='sell').order_by('-created_at')[:5]
+#
+#         recent_trades = []
+#         for trade in trades:
+#             user = trade.user
+#             recent_trades.append({
+#                 'name': user.first_name or user.username,
+#                 'email': user.email,
+#                 'trade': f'Sold - {trade.energy_ask} kWh',
+#                 'amount': f'₹{trade.amount}',
+#             })
+#
+#         return JsonResponse({
+#             'summary': {
+#                 'energy_consumed': total_consumed,
+#                 'energy_saved': total_saved,
+#                 'energy_sold': total_sold,
+#                 'earnings': earnings,
+#             },
+#             'weekly_energy_usage': weekly_data,
+#             'monthly_revenue': monthly_data,
+#             'recent_trades': recent_trades,
+#         })
+#
+#     # For non-AJAX requests, render the dashboard template
+#     return render(request, 'seller-dashboard.html')
+
 def seller_dashboard(request):
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # Aggregate total energy consumed and saved by all users
-        total_consumed = User.objects.aggregate(total=Sum('total_energy_consumed'))['total'] or 0
-        total_saved = User.objects.aggregate(total=Sum('total_energy_saved'))['total'] or 0
+    user = request.user
 
-        # Aggregate total energy sold and earnings where type='sell' and status='accepted' (case-insensitive)
-        total_sold = Proposal.objects.filter(
-            type__iexact='sell',
-            status__iexact='accepted'
+    # Summary Data
+    energy_consumed = float(user.total_energy_consumed or 0)
+    energy_saved = float(user.total_energy_saved or 0)
+
+    energy_sold = Proposal.objects.filter(user=user, type='sell').aggregate(
+        total=Sum('energy_ask')
+    )['total'] or 0
+
+    earnings = Proposal.objects.filter(
+        user=user,
+        status__iexact='Accepted'
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    energy_sold = float(energy_sold)
+    earnings = float(earnings)
+
+    # Weekly energy stats (last 7 days) => sold & saved
+    weekly_labels = []
+    weekly_sold = []
+    weekly_saved = []
+
+    for i in range(6, -1, -1):
+        day = now() - timedelta(days=i)
+        label = day.strftime('%a')
+        weekly_labels.append(label)
+
+        # Total sold energy (energy_ask) from proposals of type 'sell' created that day
+        sold = Proposal.objects.filter(
+            user=user,
+            type='sell',
+            created_at__date=day.date()
         ).aggregate(total=Sum('energy_ask'))['total'] or 0
 
-        # Total earnings from those sales
-        earnings = Proposal.objects.filter(
-            type__iexact='sell',
-            status__iexact='accepted'
+        # Total saved energy from 'save' transactions that day
+        saved = Transaction.objects.filter(
+            user=user,
+            created_at__date=day.date(),
+            transaction_type__iexact='save'
+        ).aggregate(total=Sum('proposal__amount'))['total'] or 0
+
+        weekly_sold.append(float(sold or 0))
+        weekly_saved.append(float(saved or 0))
+
+    # Monthly revenue (from completed proposals)
+    monthly_labels = []
+    monthly_revenue = []
+    today = now()
+
+    for i in range(6, -1, -1):
+        month_date = today - relativedelta(months=i)
+        label = month_date.strftime('%b %Y')
+        monthly_labels.append(label)
+
+        monthly_earning = Proposal.objects.filter(
+            user=user,
+            status__iexact='Accepted',
+            created_at__year=month_date.year,
+            created_at__month=month_date.month
         ).aggregate(total=Sum('amount'))['total'] or 0
 
-        # Example static weekly data for charts (you can replace with dynamic queries)
-        weekly_data = {
-            'labels': ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
-            'consumed': [1500, 1000, 1200, 1100, 1300, 800, 900],
-            'saved': [200, 150, 300, 100, 180, 120, 130],
+        monthly_revenue.append(float(monthly_earning or 0))
+
+    # Recent trades (last 5)
+    trades = Trade.objects.filter(
+        seller=user
+    ).select_related('buyer', 'proposal').order_by('-created_at')[:5]
+
+    recent_trades = [
+        {
+            'name': f"{trade.buyer.first_name} {trade.buyer.last_name}",
+            'email': trade.buyer.email,
+            'trade': 'Sold',
+            'amount': f"₹{float(trade.proposal.amount):.2f}"
         }
+        for trade in trades
+    ]
 
-        # Example static monthly revenue data for charts
-        monthly_data = {
-            'labels': ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-            'revenue': [800, 1200, 950, 1100, 1288],
-        }
+    context = {
+        'summary': {
+            'energy_consumed': energy_consumed,
+            'energy_saved': energy_saved,
+            'energy_sold': energy_sold,
+            'earnings': earnings,
+        },
+        'weekly': {
+            'labels': weekly_labels,
+            'sold': weekly_sold,
+            'saved': weekly_saved
+        },
+        'monthly': {
+            'labels': monthly_labels,
+            'revenue': monthly_revenue
+        },
+        'recent_trades': recent_trades
+    }
 
-        # Fetch last 5 sell proposals (trades) ordered by creation date descending
-        trades = Proposal.objects.filter(type__iexact='sell').order_by('-created_at')[:5]
+    print("Dashboard context data:", context)
 
-        recent_trades = []
-        for trade in trades:
-            user = trade.user
-            recent_trades.append({
-                'name': user.first_name or user.username,
-                'email': user.email,
-                'trade': f'Sold - {trade.energy_ask} kWh',
-                'amount': f'₹{trade.amount}',
-            })
+    return render(request, 'seller-dashboard.html', context)
+# def buyer_dashboard(request):
+#     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+#         # Aggregate total energy consumed and saved by all users
+#         total_consumed = User.objects.aggregate(total=Sum('total_energy_consumed'))['total'] or 0
+#         total_saved = User.objects.aggregate(total=Sum('total_energy_saved'))['total'] or 0
+#
+#         # Aggregate total energy bought and spending where type='buy' and status='accepted' (case-insensitive)
+#         total_bought = Proposal.objects.filter(
+#             type__iexact='buy',
+#             status__iexact='accepted'
+#         ).aggregate(total=Sum('energy_ask'))['total'] or 0
+#
+#         spending = Proposal.objects.filter(
+#             type__iexact='buy',
+#             status__iexact='accepted'
+#         ).aggregate(total=Sum('amount'))['total'] or 0
+#
+#         # Example static weekly data for charts (replace with dynamic if needed)
+#         weekly_data = {
+#             'labels': ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
+#             'consumed': [1600, 1100, 1250, 1150, 1400, 900, 1000],
+#             'saved': [180, 130, 290, 90, 170, 100, 110],
+#         }
+#
+#         # Example static monthly revenue data for charts (can be replaced)
+#         monthly_data = {
+#             'labels': ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+#             'revenue': [600, 1000, 870, 1050, 1200],
+#         }
+#
+#         # Fetch last 5 buy proposals (trades) ordered by creation date descending
+#         trades = Proposal.objects.filter(type__iexact='buy').order_by('-created_at')[:5]
+#
+#         recent_trades = []
+#         for trade in trades:
+#             user = trade.user
+#             recent_trades.append({
+#                 'name': user.first_name or user.username,
+#                 'email': user.email,
+#                 'trade': f'Bought - {trade.energy_ask} kWh',
+#                 'amount': f'₹{trade.amount}',
+#             })
+#
+#         return JsonResponse({
+#             'summary': {
+#                 'energy_consumed': total_consumed,
+#                 'energy_saved': total_saved,
+#                 'energy_bought': total_bought,
+#                 'spending': spending,
+#             },
+#             'weekly_energy_usage': weekly_data,
+#             'monthly_revenue': monthly_data,
+#             'recent_trades': recent_trades,
+#         })
+#
+#     return render(request, 'buyer_dashboard.html')
 
-        return JsonResponse({
-            'summary': {
-                'energy_consumed': total_consumed,
-                'energy_saved': total_saved,
-                'energy_sold': total_sold,
-                'earnings': earnings,
-            },
-            'weekly_energy_usage': weekly_data,
-            'monthly_revenue': monthly_data,
-            'recent_trades': recent_trades,
-        })
-
-    # For non-AJAX requests, render the dashboard template
-    return render(request, 'seller-dashboard.html')
-
-
+from collections import defaultdict
 def buyer_dashboard(request):
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # Aggregate total energy consumed and saved by all users
-        total_consumed = User.objects.aggregate(total=Sum('total_energy_consumed'))['total'] or 0
-        total_saved = User.objects.aggregate(total=Sum('total_energy_saved'))['total'] or 0
+    user = request.user
 
-        # Aggregate total energy bought and spending where type='buy' and status='accepted' (case-insensitive)
-        total_bought = Proposal.objects.filter(
-            type__iexact='buy',
-            status__iexact='accepted'
-        ).aggregate(total=Sum('energy_ask'))['total'] or 0
+    # Summary Data
+    summary = {
+        'energy_consumed': user.total_energy_consumed,
+        'energy_saved': user.total_energy_saved,
+        'energy_bought': Trade.objects.filter(buyer=user).count(),
+        'total_spent': Trade.objects.filter(buyer=user).aggregate(total=Sum('proposal__amount'))['total'] or 0
+    }
 
-        spending = Proposal.objects.filter(
-            type__iexact='buy',
-            status__iexact='accepted'
-        ).aggregate(total=Sum('amount'))['total'] or 0
+    # Weekly Stats
+    today = datetime.today().date()
+    start_of_week = today - timedelta(days=today.weekday())
+    weekly_labels = []
+    weekly_bought = []
+    weekly_saved = []
 
-        # Example static weekly data for charts (replace with dynamic if needed)
-        weekly_data = {
-            'labels': ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
-            'consumed': [1600, 1100, 1250, 1150, 1400, 900, 1000],
-            'saved': [180, 130, 290, 90, 170, 100, 110],
-        }
+    for i in range(7):
+        day = start_of_week + timedelta(days=i)
+        label = day.strftime('%a')
+        weekly_labels.append(label)
 
-        # Example static monthly revenue data for charts (can be replaced)
-        monthly_data = {
-            'labels': ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-            'revenue': [600, 1000, 870, 1050, 1200],
-        }
+        bought = Trade.objects.filter(buyer=user, created_at__date=day).aggregate(total=Sum('proposal__energy_ask'))['total'] or 0
+        saved = user.total_energy_saved / 7  # or compute per day if available
 
-        # Fetch last 5 buy proposals (trades) ordered by creation date descending
-        trades = Proposal.objects.filter(type__iexact='buy').order_by('-created_at')[:5]
+        weekly_bought.append(float(bought))
+        weekly_saved.append(float(saved))
 
-        recent_trades = []
-        for trade in trades:
-            user = trade.user
-            recent_trades.append({
-                'name': user.first_name or user.username,
-                'email': user.email,
-                'trade': f'Bought - {trade.energy_ask} kWh',
-                'amount': f'₹{trade.amount}',
-            })
+    # Monthly Spending (last 6 months)
+    monthly_data = defaultdict(float)
+    for i in range(6):
+        month = (today.replace(day=1) - timedelta(days=30*i)).replace(day=1)
+        label = month.strftime('%b %Y')
+        amount = Trade.objects.filter(
+            buyer=user,
+            created_at__month=month.month,
+            created_at__year=month.year
+        ).aggregate(total=Sum('proposal__amount'))['total'] or 0
+        monthly_data[label] = float(amount)
 
-        return JsonResponse({
-            'summary': {
-                'energy_consumed': total_consumed,
-                'energy_saved': total_saved,
-                'energy_bought': total_bought,
-                'spending': spending,
-            },
-            'weekly_energy_usage': weekly_data,
-            'monthly_revenue': monthly_data,
-            'recent_trades': recent_trades,
+    monthly_labels = list(reversed(list(monthly_data.keys())))
+    monthly_spent = list(reversed(list(monthly_data.values())))
+
+    # Recent Trades
+    recent_trades = Trade.objects.filter(buyer=user).order_by('-created_at')[:5]
+    recent_data = []
+    for trade in recent_trades:
+        seller = trade.seller
+        recent_data.append({
+            'name': seller.first_name + ' ' + seller.last_name,
+            'email': seller.email,
+            'trade': f"{trade.proposal.energy_ask}",
+            'amount': f"{trade.proposal.amount}"
         })
 
-    return render(request, 'buyer_dashboard.html')
+    context = {
+        'summary': summary,
+        'weekly': {
+            'labels': weekly_labels,
+            'bought': weekly_bought,
+            'saved': weekly_saved
+        },
+        'monthly': {
+            'labels': monthly_labels,
+            'spent': monthly_spent
+        },
+        'recent_trades': recent_data
+    }
+
+    return render(request, 'buyer_dashboard.html', context)
 def user_list(request):
     users = User.objects.all()  # fetch all users
     return render(request, 'user_list.html', {'users': users})
@@ -277,11 +463,28 @@ def seller_proposals_for_buyer(request):
     })
 
 def your_proposals_seller(request):
-    your_proposals_seller = Proposal.objects.filter(user=request.user, type='SELL',)
+    your_proposals_seller = Proposal.objects.filter(user=request.user, type='SELL') \
+        .order_by(
+            # Prioritize status 'Active' by sorting using a conditional expression
+            models.Case(
+                models.When(status='Active', then=0),
+                default=1,
+                output_field=models.IntegerField()
+            ),
+            '-created_at'  # Optional: latest created proposals on top
+        )
     return render(request, 'your_proposal_seller.html', {'proposals': your_proposals_seller})
 
 def your_proposals_buyer(request):
-    your_proposals_buyer = Proposal.objects.filter(user=request.user, type='BUY', )
+    your_proposals_buyer = Proposal.objects.filter(user=request.user, type='BUY') \
+        .order_by(
+            models.Case(
+                models.When(status='Active', then=0),
+                default=1,
+                output_field=models.IntegerField()
+            ),
+            '-created_at'
+        )
     return render(request, 'your_proposal_buyer.html', {'proposals': your_proposals_buyer})
 
 
@@ -665,29 +868,38 @@ def buyer_notifications_view(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'buyer_notifications.html', {'notifications': notifications})
 def buyer_transactions_view(request):
-    trades = Trade.objects.filter(buyer=request.user).select_related('seller', 'buyer', 'proposal').order_by('-created_at')
+    search_query = request.GET.get('search', '').strip()
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
 
-    # Get search and date filter parameters
-    search_query = request.GET.get('search', '')
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+    # Read rows per page from GET param, default 10, max 100 for safety
+    try:
+        rows_per_page = int(request.GET.get('rows_per_page', 10))
+        if rows_per_page > 100:
+            rows_per_page = 100
+    except ValueError:
+        rows_per_page = 10
+
+    # Filter trades where the current user is the buyer
+    trades = Trade.objects.filter(buyer=request.user).select_related('buyer', 'seller', 'proposal')
 
     # Apply search filter
     if search_query:
         trades = trades.filter(
-            Q(proposal__description__icontains=search_query) |
             Q(seller__username__icontains=search_query) |
-            Q(buyer__username__icontains=search_query) |
+            Q(buyer__email__icontains=search_query) |
             Q(id__icontains=search_query)
         )
 
-    # Apply date range filter
+    # Apply date filter
     if start_date:
         trades = trades.filter(created_at__date__gte=start_date)
     if end_date:
         trades = trades.filter(created_at__date__lte=end_date)
 
-    # Add display label
+    trades = trades.order_by('-created_at')
+
+    # Add display type for each trade (flip SELL and BUY roles if needed)
     for trade in trades:
         if trade.proposal.type == 'BUY':
             trade.display_type = f"Accepted & Sold by {trade.seller.username}"
@@ -696,18 +908,36 @@ def buyer_transactions_view(request):
         else:
             trade.display_type = trade.proposal.type
 
+    paginator = Paginator(trades, rows_per_page)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'trades': trades,
+        'page_obj': page_obj,
         'search_query': search_query,
         'start_date': start_date,
         'end_date': end_date,
+        'rows_per_page': rows_per_page,
     }
+
     return render(request, 'buyer_transaction.html', context)
+
+
+from django.core.paginator import Paginator
+
 
 def seller_transactions_view(request):
     search_query = request.GET.get('search', '').strip()
     start_date = request.GET.get('start_date', '')
     end_date = request.GET.get('end_date', '')
+
+    # Read rows per page from GET param, default 10, max 100 for safety
+    try:
+        rows_per_page = int(request.GET.get('rows_per_page', 10))
+        if rows_per_page > 100:
+            rows_per_page = 100
+    except ValueError:
+        rows_per_page = 10
 
     trades = Trade.objects.filter(seller=request.user).select_related('buyer', 'seller', 'proposal')
 
@@ -736,29 +966,82 @@ def seller_transactions_view(request):
         else:
             trade.display_type = trade.proposal.type
 
-    # AJAX request (optional partial rendering)
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return render(request, 'partials/transaction_table.html', {'trades': trades})
+    paginator = Paginator(trades, rows_per_page)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
-    return render(request, 'seller_transaction.html', {
-        'trades': trades,
+    # Pass rows_per_page so the template can keep it selected
+    context = {
+        'page_obj': page_obj,
         'search_query': search_query,
         'start_date': start_date,
         'end_date': end_date,
-    })
+        'rows_per_page': rows_per_page,
+    }
+
+    # # AJAX request (optional partial rendering)
+    # if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+    #     return render(request, 'transaction_table.html', context)
+
+    return render(request, 'seller_transaction.html', context)
+
 
 def admin_transactions_view(request):
+    search_query = request.GET.get('search', '').strip()
+    start_date = request.GET.get('start_date', '')
+    end_date = request.GET.get('end_date', '')
+
+    # Read rows per page from GET param, default 10, max 100 for safety
+    try:
+        rows_per_page = int(request.GET.get('rows_per_page', 10))
+        if rows_per_page > 100:
+            rows_per_page = 100
+    except ValueError:
+        rows_per_page = 10
+
+    # Fetch all trades with related data
     trades = Trade.objects.select_related('buyer', 'seller', 'proposal').annotate(
         display_type=Case(
-            When(proposal__type='BUY', then=Value('BUY - Accepted & Sold by Seller')),
-            When(proposal__type='SELL', then=Value('SELL - Accepted & Bought by Buyer')),
+            When(proposal__type='BUY', then=Value('Accepted & Sold by Seller')),
+            When(proposal__type='SELL', then=Value('Accepted & Bought by Buyer')),
             default=Value('Unknown'),
             output_field=CharField(),
         )
-    ).order_by('-created_at')
+    )
 
-    context = {'trades': trades}
+    # Apply search filter
+    if search_query:
+        trades = trades.filter(
+            Q(buyer__username__icontains=search_query) |
+            Q(seller__username__icontains=search_query) |
+            Q(buyer__email__icontains=search_query) |
+            Q(seller__email__icontains=search_query) |
+            Q(id__icontains=search_query)
+        )
+
+    # Apply date filter
+    if start_date:
+        trades = trades.filter(created_at__date__gte=start_date)
+    if end_date:
+        trades = trades.filter(created_at__date__lte=end_date)
+
+    trades = trades.order_by('-created_at')
+
+    # Paginate results
+    paginator = Paginator(trades, rows_per_page)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'search_query': search_query,
+        'start_date': start_date,
+        'end_date': end_date,
+        'rows_per_page': rows_per_page,
+    }
+
     return render(request, 'admin_transactions.html', context)
+
 
 
 

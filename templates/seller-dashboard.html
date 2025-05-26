@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 {% load static %}
 <html>
@@ -11,6 +12,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <link rel="stylesheet" href="{% static 'index.css' %}">
 <body>
@@ -188,201 +190,135 @@
 
   <div class="w3-container">
     <div class="top-das-grap-detai">
-        <div class="tdgd-box">
-            <div class="tdgd-icon bb"><i style="font-size:24px" class="fa">&#xf240;</i></div>
-            <div class="tdgd-content-box">
 
-                 <p class="tdgd-con-num"><span id="consumed">--</span> kWh</p>
-                <p class="tdgd-con-con">Energy Consumed</p>
-            </div>
-        </div>
         <div class="tdgd-box">
-            <div class="tdgd-icon uu"><i class="material-icons">&#xe853;</i></div>
+             <div class="tdgd-icon pp"><i style="font-size:24px" class="fa">&#xf1e6;</i></div>
+
             <div class="tdgd-content-box">
-<!--                <p >2.2k</p>-->
-                 <p class="tdgd-con-num"><span id="sold">--</span> kWh</p>
+                <p class="tdgd-con-num" >{{ summary.energy_sold }} kWh</p>
                 <p class="tdgd-con-con">Total Energy Sold</p>
             </div>
         </div>
         <div class="tdgd-box">
-            <div class="tdgd-icon pp"><i style="font-size:24px" class="fa">&#xf1e6;</i></div>
+            <div class="tdgd-icon bb"><i style="font-size:24px" class="fa">&#xf240;</i></div>
+
             <div class="tdgd-content-box">
-                <p  class="tdgd-con-num" >{{ user.total_energy_saved }} kWh</p>
-                 <p class="tdgd-con-num" style="display:none"><span id="saved">--</span> kWh</p>
+                <p class="tdgd-con-num" >{{ summary.energy_saved }} kWh</p>
+
                 <p class="tdgd-con-con">Total Energy Saved</p>
             </div>
         </div>
         <div class="tdgd-box">
-            <div class="tdgd-icon ww"><i class="material-icons">&#xe850;</i></div>
+           <div class="tdgd-icon uu"><i class="material-icons">&#xe853;</i></div>
             <div class="tdgd-content-box">
-<!--                <p >₹20000</p>-->
-                <p class="tdgd-con-num"><span id="earnings">--</span> €</p>
-                <p class="tdgd-con-con">Earning</p>
+<p class="tdgd-con-num"> € {{ summary.earnings }} </p>
 
+                <p class="tdgd-con-con">Total Earnings</p>
             </div>
         </div>
+
+
     </div>
 
     <div class="graphic-container">
-       <section>
-    <h2>Weekly Energy Usage</h2>
-    <canvas id="weeklyChart" width="500" height="250"></canvas>
-  </section>
 
-        <section>
+<div class="section chart-container">
+    <h2>Weekly Energy Stats</h2>
+    <canvas id="weeklyChart" style="width:500px"></canvas>
+</div>
+
+        <div class="section chart-container">
     <h2>Monthly Revenue</h2>
-    <canvas id="monthlyChart" width="500" height="250"></canvas>
-  </section>
-    </div>
+    <canvas id="monthlyChart" style="width:500px"></canvas>
+</div>
 
-
-   <div class="saller-dashboard-sec-section">
-    <div class="sdss-first">
-      <div class="energy-saveing-ssdss-first">
-        <div><p class="graph-title">Energy Saved</p></div>
-        <div class="this-months-btn">This Month</div>
-      </div>
-      <div class="ssdsss-first-image">
-        <img src="https://png.pngtree.com/png-clipart/20241021/original/pngtree-solar-panel-illustration-renewable-energy-clipart-png-image_16441830.png" alt="img">
-      </div>
-      <div class="ssdss-first-content">
-        <p>You have saved 14% energy in this month, which is 4% increased from last month</p>
-      </div>
 
     </div>
 
-  <section>
-    <h2>Recent Trades</h2>
-    <ul id="tradesList">
-      <li>Loading...</li>
-    </ul>
-  </section>
-
-
-
-
+<div class="section">
+        <h2>Recent Trades</h2>
+        {% if recent_trades %}
+            <table class="section-table table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Seller Name</th>
+                        <th>Email</th>
+<!--                        <th>Trade</th>-->
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trade in recent_trades|slice:":5" %}
+                <tr>
+                    <td>{{ trade.name }}</td>
+                    <td>{{ trade.email }}</td>
+                    <!-- <td>{{ trade.trade }}</td> -->
+                    <td>{{ trade.amount }}</td>
+                </tr>
+            {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No recent trades available.</p>
+        {% endif %}
+    </div>
 
 
 </div>
       </div>
     </div>
 
-
-</body>
-
 <script>
-  async function loadDashboardData() {
-    // Dummy summary data
-    const data = {
-      summary: {
-        energy_consumed: 1200,
-        energy_saved: 300,
-        energy_sold: 450,
-        earnings: 1500
-      },
-      weekly_energy_usage: {
-        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        consumed: [150, 180, 170, 160, 200, 220, 170],
-        saved: [40, 30, 25, 35, 40, 50, 50]
-      },
-      monthly_revenue: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
-        revenue: [100, 200, 150, 300, 250, 400, 350]
-      },
-      recent_trades: [
-        { name: 'John Doe', email: 'john@example.com', trade: 'Sold', amount: '₹1200' },
-        { name: 'Jane Smith', email: 'jane@example.com', trade: 'Bought', amount: '₹1500' },
-        { name: 'Alex Brown', email: 'alex@example.com', trade: 'Sold', amount: '₹900' }
-      ]
-    };
-
-    // Summary
-    document.getElementById('consumed').textContent = data.summary.energy_consumed;
-    document.getElementById('saved').textContent = data.summary.energy_saved;
-    document.getElementById('sold').textContent = data.summary.energy_sold;
-    document.getElementById('earnings').textContent = data.summary.earnings;
-
-    // Weekly Chart
     const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
     new Chart(weeklyCtx, {
-      type: 'bar',
-      data: {
-        labels: data.weekly_energy_usage.labels,
-        datasets: [
-          {
-            label: 'Consumed',
-            data: data.weekly_energy_usage.consumed,
-            backgroundColor: 'rgba(255, 99, 132, 0.6)'
-          },
-          {
-            label: 'Saved',
-            data: data.weekly_energy_usage.saved,
-            backgroundColor: 'rgba(54, 162, 235, 0.6)'
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'top'
-          }
+        type: 'bar',
+        data: {
+            labels: {{ weekly.labels|safe }},
+            datasets: [
+                {
+                    label: 'Energy Sold (kWh)',
+                    data: {{ weekly.sold|safe }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                },
+                {
+                    label: 'Energy Saved (kWh)',
+                    data: {{ weekly.saved|safe }},
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
         }
-      }
     });
 
-    // Monthly Chart
     const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
     new Chart(monthlyCtx, {
-      type: 'line',
-      data: {
-        labels: data.monthly_revenue.labels,
-        datasets: [{
-          label: 'Revenue (€)',
-          data: data.monthly_revenue.revenue,
-          borderColor: 'rgba(75, 192, 192, 1)',
-          fill: false,
-          tension: 0.3
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'top'
-          }
+        type: 'line',
+        data: {
+            labels: {{ monthly.labels|safe }},
+            datasets: [{
+                label: 'Monthly Revenue (₹)',
+                data: {{ monthly.revenue|safe }},
+                fill: true,
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
         }
-      }
     });
-
-    // Recent Trades
-    const tradesList = document.getElementById('tradesList');
-    tradesList.innerHTML = ''; // Clear existing content
-
-    data.recent_trades.forEach(trade => {
-      const tradeCard = document.createElement('div');
-      tradeCard.className = 'rec-trad-sub';
-
-      tradeCard.innerHTML = `
-        <div class="nam-profike">
-          <img src="https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2220431045.jpg" alt="Profile Picture">
-          <div class="profile-name" style="padding-right:50px">
-            <p class="pro-name-ssdss-tr">${trade.name}</p>
-            <p class="pro-content-ssdss-tr">${trade.email}</p>
-          </div>
-        </div>
-        <div class="sold-btn">
-          <p>${trade.trade} - ${trade.amount.replace(/₹/g, '€ ')}</p>
-        </div>
-      `;
-
-      tradesList.appendChild(tradeCard);
-    });
-  }
-
-  // Load data on page load
-  loadDashboardData();
 </script>
+</body>
+
 
 <script src="index.js"></script>
 </html>

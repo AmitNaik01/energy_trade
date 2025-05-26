@@ -58,7 +58,7 @@
 
 button {
     margin-top: 10px;
-    padding: 10px 20px;
+    padding: 10px 50px;
     cursor: pointer;
     border: none;
     background-color: #28a745;
@@ -232,7 +232,7 @@ button:hover {
             </div>
         </div>
 <p style="color:#28a745">Energy you have in your wallet: {{ user.total_energy_saved }} kWh</p>
-        <table class="section-table">
+        <table id="proposalTable" class="section-table">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -251,7 +251,7 @@ button:hover {
       <td>{{ proposal.energy_ask }} kWh</td>
       <td>{{ proposal.amount }} €</td>
       <td>{{ proposal.status }}</td>
-        <td class="icons56785">
+        <td >
   <button class="make-trade-btn"
     data-id="{{ proposal.id }}"
     data-user="{{ proposal.user.username }}"
@@ -335,6 +335,30 @@ window.onclick = function(event) {
     document.getElementById('tradeModal').style.display = 'none';
   }
 </script>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- DataTables CSS and JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#proposalTable').DataTable({
+            // default page length
+            pageLength: 5,
+            // rows per page options
+            lengthMenu: [5, 10, 25, 50, 100],
+            // disable initial ordering so rows appear as sent from backend or customize
+            order: [],
+            language: {
+                search: "Search:"
+            }
+        });
+    });
+</script>
+
 
 </body>
 <script src="index.js"></script>

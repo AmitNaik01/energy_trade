@@ -90,8 +90,12 @@ class Trade(models.Model):
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='trades_as_seller')
     proposal = models.ForeignKey('Proposal', on_delete=models.CASCADE)
 
+
     class Meta:
         db_table = 'account_trade'
+
+
+
 
     def save(self, *args, **kwargs):
         # Generate alphanumeric ID if it's not set

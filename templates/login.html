@@ -20,12 +20,19 @@
          }
       </style>
       <div>
+
          <form  method="post">
             {% csrf_token %}
+            {% if msg %}
+      <div class="alert alert-danger" role="alert">
+        {{ msg }}
+      </div>
+    {% endif %}
             <div class="signin-container">
                <div class="signin-content-box">
                   <p class="signin-welcome-title">Welcome back !!!</p>
                   <p class="signin-title">Sign in</p>
+
                   <p class="signin-lable">User Name</p>
                   {{ form.username }}
                   <p class="signin-lable">Password</p>

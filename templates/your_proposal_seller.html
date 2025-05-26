@@ -156,8 +156,9 @@ button:hover {
 
             <div class="all-user-title-box-with-search">
                 <div class="all-user-deaceboarrd-search user-page-searchbar-box">
-                    <i style="font-size:24px" class="fa">&#xf002;</i>
-                    <input type="search" class="user-page-searchbar" name="" id="" placeholder="Search">
+<!--                    <i style="font-size:24px" class="fa">&#xf002;</i>-->
+                     <p style="font-size:16px; color:#28a745">Energy you have in your wallet: {{ user.total_energy_saved }} kWh</p>
+                    <input type="search" style="display:none" class="user-page-searchbar" name="" id="" placeholder="Search">
                 </div>
 
                 <div class="all-tiel-box-conetn">
@@ -180,9 +181,9 @@ button:hover {
                 </div>
             </div>
         </div>
-        <p style="color:#28a745">Energy you have in your wallet: {{ user.total_energy_saved }} kWh</p>
 
-        <table class="section-table">
+
+        <table id="sellerTable" class="section-table table table-striped table-bordered">
 
             <thead>
                 <tr>
@@ -201,7 +202,8 @@ button:hover {
             <td> € {{ proposal.amount }}</td>
             <td>{{ proposal.status }}</td>
       <td class="icons56785">
-  {% if proposal.status != "Accepted" %}
+  {% if proposal.status != "Accepted" and proposal.status != "Completed" %}
+
     <!-- Edit link -->
     <a href="{% url 'edit_seller_proposal' proposal.id %}">
       <i style="font-size:24px" class="fa edit45">&#xf044;</i>
@@ -311,6 +313,35 @@ function confirmDelete(event, proposalId) {
 }
 </script>
 
+
+
+
+
+
+
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- DataTables CSS and JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#sellerTable').DataTable({
+            // default page length
+            pageLength: 10,
+            // rows per page options
+            lengthMenu: [ 10, 25, 50, 100],
+            // disable initial ordering so rows appear as sent from backend or customize
+            order: [],
+            language: {
+                search: "Search:"
+            }
+        });
+    });
+</script>
 </body>
 <script src="index.js"></script>
 
