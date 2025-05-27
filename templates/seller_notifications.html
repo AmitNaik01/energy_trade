@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 {% load static %}
 <html>
-<title></title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<head>
+    <title>Notifications</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link rel="stylesheet" href="{% static 'index.css' %}">
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="{% static 'index.css' %}">
 
+    <!-- Inline Styles -->
     <style>
         .noti {
             border: none !important;
@@ -33,7 +33,6 @@
             padding: 10px;
         }
 
-        /* Optional styling for table */
         .section-table {
             width: 100%;
             border-collapse: collapse;
@@ -55,21 +54,8 @@
 
 {% include "includes/seller_sidebar.html" %}
 
-<!-- Page Content -->
 <div class="side-div-section24">
-    <div class="w3-container w3-teal">
-        <div><h1>Logo</h1></div>
-
-
-        <div class="logo-left-icons">
-            <i class="material-icons">&#xe001;</i>
-            <i class="material-icons">&#xe1ac;</i>
-            <i class="material-icons">&#xe853;</i>
-        </div>
-
-        <!-- Hamburger Menu (Visible in mobile view) -->
-        <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
-    </div>
+    {% include "includes/seller_topbar.html" %}
 
     <div class="w3-container">
         <div class="add-user-page-box">
@@ -80,9 +66,6 @@
         <table id="sellerTable" class="section-table">
             <thead>
                 <tr>
-                    <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
-<!--                    <th>#</th>-->
-<!--                    <th>Type</th>-->
                     <th>Message</th>
                     <th>Date</th>
                     <th>Action</th>
@@ -91,25 +74,12 @@
             <tbody class="noti-m10">
                 {% for notification in notifications %}
                 <tr>
-                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>
-<!--                    <td>{{ forloop.counter }}</td>-->
-<!--                    <td>{{ notification.type|title }}</td>-->
                     <td>{{ notification.message }}</td>
                     <td>{{ notification.created_at|date:"Y-m-d H:i" }}</td>
                     <td>
-                        <button class="noti"
-                            onclick="showPopup(
-                                `{{ notification.message|escapejs }}<br><br>
-                                {% if notification.data %}
-                                    <ul style='list-style:none; padding-left:0; margin:0;'>
-                                    {% for key, value in notification.data.items %}
-                                        <li><strong>{{ key|capfirst }}:</strong> {{ value }}</li>
-                                    {% endfor %}
-                                    </ul>
-                                {% else %}
-                                    -
-                                {% endif %}
-                                `)">
+                        <button class="noti open-btn"
+                                data-message="{{ notification.message|escapejs }}"
+                                data-data="{% if notification.data %}{% for key, value in notification.data.items %}{{ key|capfirst }}: {{ value }}\n{% endfor %}{% else %}-{% endif %}">
                             Open
                         </button>
                     </td>
@@ -118,7 +88,6 @@
             </tbody>
         </table>
 
-        <!-- Delete Button -->
         <button id="deleteBtn" class="delete-btn" onclick="deleteSelectedRows()">Delete Selected</button>
         {% else %}
         <p>No notifications to show.</p>
@@ -131,6 +100,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                <!-- DO NOT REMOVE CLOSE BUTTON -->
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
                 <h4 class="modal-title">Notification Details</h4>
             </div>
@@ -144,9 +114,38 @@
     </div>
 </div>
 
-<!-- JavaScript for popup and delete -->
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script src="{% static 'index.js' %}"></script>
+
 <script>
-    // Show or hide the delete button when checkboxes change
+    // DataTable setup
+    $(document).ready(function () {
+        $('#sellerTable').DataTable({
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            order: [],
+            language: {
+                search: "Search:"
+            }
+        });
+
+        // Modal "Open" button logic
+        $('.open-btn').on('click', function () {
+    const message = $(this).data('message');
+    const rawData = String($(this).data('data')); // Ensure string format
+    const formattedData = rawData.replace(/\\n/g, "<br>"); // Fix newline formatting
+    const content = `<strong>${message}</strong><br><br>${formattedData}`;
+    $('#modalContent').html(content);
+    $('#notificationModal').modal('show');
+});
+
+    });
+
+    // Checkbox toggle logic (if needed in future)
     function toggleDeleteBtn() {
         const checkboxes = document.querySelectorAll('.checkbox');
         const deleteBtn = document.getElementById('deleteBtn');
@@ -161,7 +160,6 @@
         deleteBtn.style.display = anyChecked ? 'block' : 'none';
     }
 
-    // Select or deselect all checkboxes
     function toggleSelectAll(source) {
         const checkboxes = document.querySelectorAll('.checkbox');
         checkboxes.forEach(checkbox => {
@@ -170,7 +168,6 @@
         toggleDeleteBtn();
     }
 
-    // Delete selected rows from the table (frontend only)
     function deleteSelectedRows() {
         const checkboxes = document.querySelectorAll('.checkbox');
         checkboxes.forEach(checkbox => {
@@ -181,41 +178,7 @@
         });
         document.getElementById('deleteBtn').style.display = 'none';
     }
-
-    // Show modal popup with HTML content
-    function showPopup(content) {
-        document.getElementById('modalContent').innerHTML = content;  // render HTML inside modal
-        $('#notificationModal').modal('show');
-    }
 </script>
 
-
-
-
-
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-
-<!-- DataTables CSS and JS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
-<script>
-    $(document).ready(function() {
-        $('#sellerTable').DataTable({
-            // default page length
-            pageLength: 10,
-            // rows per page options
-            lengthMenu: [ 10, 25, 50, 100],
-            // disable initial ordering so rows appear as sent from backend or customize
-            order: [],
-            language: {
-                search: "Search:"
-            }
-        });
-    });
-</script>
-
-<script src="index.js"></script>
 </body>
 </html>

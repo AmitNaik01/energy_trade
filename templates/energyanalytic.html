@@ -269,19 +269,8 @@ div.pointer {
 
 <!-- Page Content -->
 <div class="side-div-section24" >
-    <div class="w3-container w3-teal">
-        <div><h1>Logo</h1></div>
+    {% include "includes/admin_topbar.html" %}
 
-
-        <div class="logo-left-icons">
-            <i class="material-icons">&#xe001;</i>
-            <i class="material-icons">&#xe1ac;</i>
-            <i class="material-icons">&#xe853;</i>
-        </div>
-
-        <!-- Hamburger Menu (Visible in mobile view) -->
-        <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
-    </div>
 
 
 
@@ -314,7 +303,7 @@ div.pointer {
     </div>
     <div class="energy-analatics-num-div">
         <div class="eng-analtic-tiele">Profit</div>
-        <div class="eng-analtic-num">$27.0k<span class="arrow-report-page">&#11205;</span></div>
+        <div class="eng-analtic-num">Є 27.0k<span class="arrow-report-page">&#11205;</span></div>
     </div>
 </div>
 </div>
@@ -363,14 +352,13 @@ google.charts.setOnLoadCallback(drawChart);
 
 function drawChart() {
 const data = google.visualization.arrayToDataTable([
-  ['Contry', 'Mhl'],
-  ['Italy',54.8],
-  ['France',48.6],
-  ['Spain',44.4],
-  ['USA',23.9],
-  ['Argentina',14.5]
+  ['City', 'Value'],
+  ['Paris', 48.6],
+  ['London', 44.4],
+  ['Berlin', 39.1],
+  ['Madrid', 35.0],
+  ['Rome', 40.2]
 ]);
-
 const options = {
     title:'World Wide Energy Production'
 };

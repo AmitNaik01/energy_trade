@@ -1,25 +1,26 @@
 <!DOCTYPE html>
 {% load static %}
 <html>
-<title></title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<head>
+    <title>Notifications</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link rel="stylesheet" href="{% static 'index.css' %}">
-<body>
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="{% static 'index.css' %}">
 
+    <!-- Inline Styles -->
     <style>
         .noti {
             border: none !important;
             color: white !important;
             background-color: black !important;
+            padding: 5px 10px;
+            cursor: pointer;
         }
 
         .delete-btn {
@@ -27,82 +28,80 @@
             margin-top: 20px;
             margin-bottom: 20px;
             background-color: red;
-            color:white;
+            color: white;
             border: none;
             padding: 10px;
         }
 
-    </style>
+        .section-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
 
-<!-- Sidebar -->
+        .section-table th, .section-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        .section-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
 {% include "includes/admin_sidebar.html" %}
 
-
-<!-- Page Content -->
-<div class="side-div-section24" >
-    <div class="w3-container w3-teal">
-        <div><h1>Logo</h1></div>
-
-
-        <div class="logo-left-icons">
-            <i class="material-icons">&#xe001;</i>
-            <i class="material-icons">&#xe1ac;</i>
-            <i class="material-icons">&#xe853;</i>
-        </div>
-
-        <!-- Hamburger Menu (Visible in mobile view) -->
-        <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
-    </div>
-
-
+<div class="side-div-section24">
+    {% include "includes/admin_topbar.html" %}
 
     <div class="w3-container">
         <div class="add-user-page-box">
             <p>Notifications</p>
         </div>
-        <table class="section-table">
+
+        {% if notifications %}
+        <table id="sellerTable" class="section-table">
+            <thead>
+                <tr>
+                    <th>Message</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
             <tbody class="noti-m10">
-                <!-- Repeat this block for each user entry -->
+                {% for notification in notifications %}
                 <tr>
-                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>
-                    <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur blanditiis, minus rem inventore impedit quasi!</td>
-                    <td class="active5678 noti" onclick="showPopup('Notification 1 Details')">Open</td>
+                    <td>{{ notification.message }}</td>
+                    <td>{{ notification.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <button class="noti open-btn"
+                                data-message="{{ notification.message|escapejs }}"
+                                data-data="{% if notification.data %}{% for key, value in notification.data.items %}{{ key|capfirst }}: {{ value }}\n{% endfor %}{% else %}-{% endif %}">
+                            Open
+                        </button>
+                    </td>
                 </tr>
-                <tr>
-                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>
-                    <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur blanditiis, minus rem inventore impedit quasi!</td>
-                    <td class="active5678 noti" onclick="showPopup('Notification 2 Details')">Open</td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>
-                    <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur blanditiis, minus rem inventore impedit quasi!</td>
-                    <td class="active5678 noti" onclick="showPopup('Notification 3 Details')">Open</td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>
-                    <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur blanditiis, minus rem inventore impedit quasi!</td>
-                    <td class="active5678 noti" onclick="showPopup('Notification 4 Details')">Open</td>
-                </tr>
-                <tr>
-                    <td><input type="checkbox" class="checkbox" onclick="toggleDeleteBtn()"></td>
-                    <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Tenetur blanditiis, minus rem inventore impedit quasi!</td>
-                    <td class="active5678 noti" onclick="showPopup('Notification 5 Details')">Open</td>
-                </tr>
-                <!-- Add more rows as needed -->
+                {% endfor %}
             </tbody>
         </table>
 
-        <!-- Delete Button -->
         <button id="deleteBtn" class="delete-btn" onclick="deleteSelectedRows()">Delete Selected</button>
+        {% else %}
+        <p>No notifications to show.</p>
+        {% endif %}
     </div>
 </div>
 
 <!-- Modal -->
-<div id="notificationModal" class="modal fade" role="dialog">
+<div id="notificationModal" class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <!-- DO NOT REMOVE CLOSE BUTTON -->
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
                 <h4 class="modal-title">Notification Details</h4>
             </div>
             <div class="modal-body">
@@ -115,9 +114,38 @@
     </div>
 </div>
 
-<!-- JavaScript for the pop-up confirmation and delete -->
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script src="{% static 'index.js' %}"></script>
+
 <script>
-    // Function to show the delete button when a checkbox is selected
+    // DataTable setup
+    $(document).ready(function () {
+        $('#sellerTable').DataTable({
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            order: [],
+            language: {
+                search: "Search:"
+            }
+        });
+
+        // Modal "Open" button logic
+        $('.open-btn').on('click', function () {
+    const message = $(this).data('message');
+    const rawData = String($(this).data('data')); // Ensure string format
+    const formattedData = rawData.replace(/\\n/g, "<br>"); // Fix newline formatting
+    const content = `<strong>${message}</strong><br><br>${formattedData}`;
+    $('#modalContent').html(content);
+    $('#notificationModal').modal('show');
+});
+
+    });
+
+    // Checkbox toggle logic (if needed in future)
     function toggleDeleteBtn() {
         const checkboxes = document.querySelectorAll('.checkbox');
         const deleteBtn = document.getElementById('deleteBtn');
@@ -129,35 +157,28 @@
             }
         });
 
-        if (anyChecked) {
-            deleteBtn.style.display = 'block';
-        } else {
-            deleteBtn.style.display = 'none';
-        }
+        deleteBtn.style.display = anyChecked ? 'block' : 'none';
     }
 
-    // Function to delete selected rows
+    function toggleSelectAll(source) {
+        const checkboxes = document.querySelectorAll('.checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = source.checked;
+        });
+        toggleDeleteBtn();
+    }
+
     function deleteSelectedRows() {
         const checkboxes = document.querySelectorAll('.checkbox');
-        checkboxes.forEach((checkbox, index) => {
+        checkboxes.forEach(checkbox => {
             if (checkbox.checked) {
                 const row = checkbox.closest('tr');
                 row.remove();
             }
         });
-
-        // Hide the delete button after deletion
         document.getElementById('deleteBtn').style.display = 'none';
-    }
-
-    // Function to show the modal with notification content
-    function showPopup(content) {
-        document.getElementById('modalContent').innerText = content; // Set the content of the modal
-        $('#notificationModal').modal('show'); // Show the modal
     }
 </script>
 
 </body>
-<script src="index.js"></script>
-
 </html>

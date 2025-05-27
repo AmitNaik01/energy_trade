@@ -11,7 +11,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="{% static 'index.css' %}">
 <body>
     <style>
@@ -173,19 +173,7 @@
 
 <!-- Page Content -->
 <div class="side-div-section24" >
-  <div class="w3-container w3-teal">
-    <div><h1>Logo</h1></div>
-
-
-    <div class="logo-left-icons">
-      <i class="material-icons">&#xe001;</i>
-      <i class="material-icons">&#xe1ac;</i>
-      <i class="material-icons">&#xe853;</i>
-    </div>
-
-    <!-- Hamburger Menu (Visible in mobile view) -->
-    <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
-  </div>
+{% include "includes/admin_topbar.html" %}
 
 
   <div class="w3-container">
@@ -193,78 +181,72 @@
         <div class="tdgd-box">
             <div class="tdgd-icon bb"><i style="font-size:24px" class="fa">&#xf240;</i></div>
             <div class="tdgd-content-box">
-                <p class="tdgd-con-num">{{ total_energy_consumed }} kwh</p>
+                <p class="tdgd-con-num">{{ summary.energy_consumed }} kwh</p>
                 <p class="tdgd-con-con">Energy Consumed</p>
             </div>
         </div>
         <div class="tdgd-box">
             <div class="tdgd-icon uu"><i class="material-icons">&#xe853;</i></div>
             <div class="tdgd-content-box">
-                <p class="tdgd-con-num">{{ total_users }}</p>
+                <p class="tdgd-con-num">{{ summary.users }}</p>
                 <p class="tdgd-con-con">Total Users</p>
             </div>
         </div>
         <div class="tdgd-box">
             <div class="tdgd-icon pp"><i style="font-size:24px" class="fa">&#xf1e6;</i></div>
             <div class="tdgd-content-box">
-                <p class="tdgd-con-num">{{ total_energy_saved }} kWh</p>
+                <p class="tdgd-con-num">{{ summary.energy_saved }} kWh</p>
                 <p class="tdgd-con-con">Total Energy Saved</p>
             </div>
         </div>
         <div class="tdgd-box">
             <div class="tdgd-icon ww"><i class="material-icons">&#xe850;</i></div>
             <div class="tdgd-content-box">
-                <p class="tdgd-con-num"> € {{ earning }}</p>
+                <p class="tdgd-con-num"> € {{ summary.earning }}</p>
                 <p class="tdgd-con-con">Earning</p>
             </div>
         </div>
     </div>
-
+<section>
     <div class="graphic-container">
+
        <div class="graphic-box gg1">
-        <div><p class="graph-title">Energy Consumed</p><b>11.2%</b></div>
-        <canvas id="myChart" style="width:100%;max-width:600px"></canvas>
+<h3>Trades Per Day (Last 10 Days)</h3>
+        <canvas id="dailyChart" style="width:500px"></canvas>
        </div>
 
        <div class="graphic-box">
-        <div><p class="graph-title">Total Revenue</p></div>
-       <div class="canva-center"> <canvas id="myChart1" style="width:100%;max-width:250px"></canvas></div>
-        <p class="earn-content">you have earned ₹1288 this month</p>
+<h3>Monthly Earnings (Last 6 Months)</h3>
+        <canvas id="monthlyChart" style="width:500px"></canvas>
+
        </div>
-
     </div>
+        <div class="graphic-container">
 
-   <div class="saller-dashboard-sec-section">
-
-   <div class="graphic-box">
-        <div><p class="graph-title">Total Trades</p></div>
-       <div class="">  <canvas id="tradesChart"></canvas></div>
-
+       <div class="graphic-box gg1">
+<h3>Energy Trade Overview </h3>
+<canvas id="comboChart" style="width:100px"></canvas>
        </div>
 
 
-    <div class="sdss-three">
-      <div><p class="graph-title">Recent Trade</p></div>
-
-      <div class="recent-trade">
-          {% for trade in recent_trades %}
-        <div class="rec-trad-sub">
-          <div class="nam-profike">
-            <img src="https://www.shutterstock.com/image-vector/user-profile-icon-vector-avatar-600nw-2220431045.jpg" alt="">
-            <div class="profile-name">
-              <p class="pro-name-ssdss-tr">{{ trade.seller.username }}</p>
-              <p class="pro-content-ssdss-tr">{{ trade.seller.email }}</p>
-            </div>
-          </div>
-          <div class="sold-btn">
-            <p>Sold - {{ trade.proposal.energy_ask }}kwh</p>
-          </div>
-        </div>
-          {% endfor %}
-
-      </div>
     </div>
-   </div>
+        <div class="graphic-container">
+
+       <div class="graphic-box gg1" style="width:500px; height:500px; padding-bottom:70px">
+<h3>Energy Usage </h3>
+        <canvas id="energyPie" style="width:500px; height:500px" ></canvas>
+       </div>
+
+       <div class="graphic-box">
+<h3>Buyers vs Sellers</h3>
+        <canvas id="buyersSellersPie" style="width:400px"></canvas>
+
+       </div>
+    </div>
+</section>
+
+
+
 
 
     </div>
@@ -273,137 +255,189 @@
 
 </body>
 <script>
-    const xValues = [100,200,300,400,500,600,700,800,900,1000];
+            const dailyLabels = {{ daily_trade_labels|safe }};
+        const dailyCounts = {{ daily_trade_counts|safe }};
+        const monthlyLabels = {{ monthly_earning_labels|safe }};
+        const monthlyValues = {{ monthly_earning_values|safe }};
 
-    new Chart("myChart", {
-      type: "line",
-      data: {
-        labels: xValues,
-        datasets: [{
-          data: [860,1140,1060,1060,1070,1110,1330,2210,7830,2478],
-          borderColor: "#0F95FA",
-          fill: false
-        }, {
-          data: [1600,1700,1700,1900,2000,2700,4000,5000,6000,7000],
-          borderColor: "#00E396",
-          fill: false
-        }
+        const ctxDaily = document.getElementById('dailyChart');
+        const ctxMonthly = document.getElementById('monthlyChart');
+        const ctxEnergyPie = document.getElementById('energyPie');
+        const ctxRadar = document.getElementById('summaryRadar');
+        const ctxBuyersSellersPie = document.getElementById('buyersSellersPie');
+
+        // Daily Trades Bar Chart
+        new Chart(ctxDaily, {
+            type: 'bar',
+            data: {
+                labels: dailyLabels,
+                datasets: [{
+                    label: 'Trades Per Day',
+                    data: dailyCounts,
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Daily Trades' }
+                }
+            }
+        });
+
+        // Monthly Earnings Line Chart
+        new Chart(ctxMonthly, {
+            type: 'line',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Monthly Earnings (€)',
+                    data: monthlyValues,
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: { display: true, text: 'Monthly Earnings' }
+                }
+            }
+        });
+
+        // Energy Usage Pie Chart
+        new Chart(ctxEnergyPie, {
+            type: 'pie',
+            data: {
+                labels: ['Energy Consumed', 'Energy Saved'],
+                datasets: [{
+                    label: 'Energy Overview',
+                    data: [{{ summary.energy_consumed }}, {{ summary.energy_saved }}],
+                    backgroundColor: ['#ff9f40', '#4bc0c0']
+                }]
+            },
+            options: {
+                plugins: {
+                    title: { display: true, text: 'Energy Usage Distribution' }
+                }
+            }
+        });
+
+        // Summary Radar Chart
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['Users', 'Energy Consumed', 'Energy Saved', 'Earnings'],
+                datasets: [{
+                    label: 'System Overview',
+                    data: [{{ summary.users }}, {{ summary.energy_consumed }}, {{ summary.energy_saved }}, {{ summary.earning }}],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)'
+                }]
+            },
+            options: {
+                plugins: {
+                    title: { display: true, text: 'Summary Radar' }
+                }
+            }
+        });
+
+        // Buyers vs Sellers Pie Chart
+        new Chart(ctxBuyersSellersPie, {
+            type: 'pie',
+            data: {
+                labels: ['Buyers', 'Sellers'],
+                datasets: [{
+                    label: 'Buyers vs Sellers',
+                    data: [{{ unique_buyers }}, {{ unique_sellers }}],
+                    backgroundColor: ['#36a2eb', '#ff6384']
+                }]
+            },
+            options: {
+                plugins: {
+                    title: { display: true, text: 'Buyers vs Sellers' }
+                }
+            }
+        });
+
+        const ctxCombo = document.getElementById('comboChart').getContext('2d');
+
+new Chart(ctxCombo, {
+    data: {
+        labels: {{ monthly_labels|safe }},
+        datasets: [
+            {
+                type: 'bar',
+                label: 'Energy Traded (Value 1)',
+                data: {{ monthly_energy_values|safe }},
+                backgroundColor: 'rgba(75, 192, 75, 0.7)',  // green bars
+                yAxisID: 'y',
+            },
+            {
+                type: 'line',
+                label: 'Amount Earned (Value 2)',
+                data: {{ monthly_earning_values|safe }},
+                borderColor: 'rgba(255, 99, 132, 1)',  // red line
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: false,
+                tension: 0.3,
+                yAxisID: 'y1',
+            }
         ]
-      },
-      options: {
-        legend: {display: false}
-      }
-    });
-
-
-
-    const xValues1 = ["Italy", "France"];
-const yValues = [55, 49];
-const barColors = [
-  "#3B82F6",
-  "#959595",
-];
-
-// Custom plugin to draw text in the center
-Chart.plugins.register({
-  beforeDraw: function (chart) {
-    if (chart.config.options.elements.center) {
-      const ctx = chart.chart.ctx;
-      const centerConfig = chart.config.options.elements.center;
-      const fontStyle = centerConfig.fontStyle || "bold";
-      const fontFamily = centerConfig.fontFamily || "Arial";
-      const fontSize = centerConfig.fontSize || 20;
-      const fontColor = centerConfig.fontColor || "#000";
-      const text = centerConfig.text || "";
-      const x = chart.chart.width / 2;
-      const y = chart.chart.height / 2;
-
-      ctx.font = fontSize + "px " + fontFamily;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = fontColor;
-      ctx.fillText(text, x, y);
-    }
-  }
-});
-
-new Chart("myChart1", {
-  type: "doughnut",
-  data: {
-    datasets: [{
-      backgroundColor: barColors,
-      data: yValues
-    }]
-  },
-  options: {
-    cutout: "60%",  // Use this instead of cutoutPercentage
-    maintainAspectRatio: false,
-    elements: {
-      center: {
-        text: "€ {{ earning }}",  // ← Pull from Django backend
-        fontStyle: "bold",
-        fontColor: "#000",
-        fontSize: 16,
-        fontFamily: "Arial"
-      }
-    }
-  }
-});
-
-
-const xValues2 = ["100", "200", "300", "400", "500", "500", "500", "500", "500", "500", "500", "500"];
-const yValues2 = [55, 49, 44, 24, 15,55, 49, 44, 24, 15, 55, 49];
-const wineColors = ["#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff" , "#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff", "#ac9cff"];  // Renamed constant
-
-new Chart("myChart2", {
-  type: "bar",
-  data: {
-    labels: xValues2,
-    datasets: [{
-      backgroundColor: wineColors,  // Updated reference
-      data: yValues2
-    }]
-  },
-  options: {
-    legend: {display: false},
-  }
-});
-
-
-
-  const tradesLabels = JSON.parse('{{ trades_labels|safe }}');
-    const tradesData = JSON.parse('{{ trades_data|safe }}');
-
-    const ctx = document.getElementById('tradesChart').getContext('2d');
-    const tradesChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: tradesLabels,
-        datasets: [{
-          label: 'Trades per Day',
-          data: tradesData,
-          fill: false,
-          borderColor: 'rgb(75, 192, 192)',
-          tension: 0.3,
-          pointBackgroundColor: 'rgb(75, 192, 192)'
-        }]
-      },
-      options: {
+    },
+    options: {
         responsive: true,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        stacked: false,
         plugins: {
-          legend: { display: true },
-          tooltip: { enabled: true }
+            title: {
+                display: true,
+                text: 'Energy Trade Overview (Energy and Earnings)'
+            }
         },
         scales: {
-          y: {
-            beginAtZero: true,
-            precision: 0
-          }
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Energy Traded'
+                },
+                beginAtZero: true,
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Amount Earned (€)'
+                },
+                grid: {
+                    drawOnChartArea: false,
+                },
+                beginAtZero: true,
+            }
         }
-      }
-    });
+    }
+});
+
 
     </script>
 
 <script src="index.js"></script>
 </html>
+
+
+
+
+

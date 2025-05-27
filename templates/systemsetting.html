@@ -339,19 +339,7 @@ div.pointer {
 
 <!-- Page Content -->
 <div class="side-div-section24" >
-    <div class="w3-container w3-teal">
-        <div><h1>Logo</h1></div>
-
-
-        <div class="logo-left-icons">
-            <i class="material-icons">&#xe001;</i>
-            <i class="material-icons">&#xe1ac;</i>
-            <i class="material-icons">&#xe853;</i>
-        </div>
-
-        <!-- Hamburger Menu (Visible in mobile view) -->
-        <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
-    </div>
+       {% include "includes/admin_topbar.html" %}
 
 
 
@@ -365,13 +353,16 @@ div.pointer {
         <div class="main-systemsetting-box">
 
             <div class="ss-box">
-                <p class="ss-icon"><img src="https://www.w3schools.com/HOWTO/img_avatar.png" alt=""></p>
-                <p class="ss-title">Profile Update</p>
+                <a href="{% url 'admin_profile' %}"> <p class="ss-icon"><img src="https://www.w3schools.com/HOWTO/img_avatar.png" alt=""></p>
+                <p class="ss-title">Profile Update</p> </a>
+
             </div>
 
+
             <div class="ss-box2">
-                <p class="ss-icon2"><img src="https://img.freepik.com/premium-vector/crypto-wallet-vector-illustration-with-mobile-smartphone-digital-wallet-technology-cryptocurrency-bitcoin-epayment-concept-international-money-transfer-vector-illustration_735449-727.jpg?semt=ais_hybrid" alt=""></p>
-                <p class="ss-title">Transation Settings</p>
+                <a href="{% url 'admin_transactions' %}"> <p class="ss-icon2"><img src="https://img.freepik.com/premium-vector/crypto-wallet-vector-illustration-with-mobile-smartphone-digital-wallet-technology-cryptocurrency-bitcoin-epayment-concept-international-money-transfer-vector-illustration_735449-727.jpg?semt=ais_hybrid" alt=""></p>
+                <p class="ss-title">Transation Settings</p></a>
+
             </div>
 
         </div>

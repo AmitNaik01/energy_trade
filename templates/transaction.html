@@ -24,20 +24,7 @@
 
 <!-- Page Content -->
 <div class="side-div-section24">
-    <div class="w3-container w3-teal">
-        <div><h1>Logo</h1></div>
-
-
-
-        <div class="logo-left-icons">
-            <i class="material-icons">&#xe001;</i>
-            <i class="material-icons">&#xe1ac;</i>
-            <i class="material-icons">&#xe853;</i>
-        </div>
-
-        <!-- Hamburger Menu (Visible in mobile view) -->
-        <span class="menu-btn">&#9776;</span>
-    </div>
+    {% include "includes/admin_topbar.html" %}
 
     <div class="add-user-page-box">
         <p>Transaction</p>
@@ -60,7 +47,7 @@
     </div>
 
     <div class="w3-container">
-        <table class="section-table table table-striped table-bordered">
+        <table class="section-tabl">
             <thead>
                 <tr>
                   <th>Trade ID</th>
@@ -98,5 +85,6 @@
 </div>
 
 <script src="{% static 'index.js' %}"></script>
+
 </body>
 </html>

@@ -2,169 +2,128 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Seller Dashboard</title>
+    <title>Sales Report</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 30px;
-            background: #f6f8fa;
+            padding: 2rem;
+            background: #f5f5f5;
         }
-        h1 {
-            margin-bottom: 20px;
-        }
-        .section {
-            margin-bottom: 40px;
-        }
-        .cards {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .card {
+        .metrics, .charts, .tables {
             background: white;
-            padding: 20px;
-            border-radius: 10px;
-            flex: 1;
-            min-width: 200px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        .chart-container {
-            width: 100%;
-            max-width: 800px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 40px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        h2 {
+            margin-bottom: 1rem;
+        }
+        canvas {
+            max-width: 100%;
         }
         table {
             width: 100%;
-            background: white;
             border-collapse: collapse;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
-            border-radius: 10px;
-            overflow: hidden;
+            margin-top: 1rem;
         }
-        th, td {
-            padding: 12px;
+        table th, table td {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
             text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        th {
-            background: #f0f0f0;
         }
     </style>
 </head>
 <body>
 
-<h1>Seller Dashboard</h1>
-
-<!-- Summary Cards -->
-<div class="section cards">
-
-    <div class="card">
-        <h3>Energy Saved</h3>
-        <p>{{ summary.energy_saved }} kWh</p>
-    </div>
-    <div class="card">
-        <h3>Energy Sold</h3>
-        <p>{{ summary.energy_sold }} kWh</p>
-    </div>
-    <div class="card">
-        <h3>Total Earnings</h3>
-        <p>₹{{ summary.earnings }}</p>
-    </div>
+<div class="metrics">
+    <h2>Sales Summary</h2>
+    <p><strong>Total Sales Energy:</strong> {{ total_sales_energy }}</p>
+    <p><strong>Total Sales Amount:</strong> ₹{{ total_sales_amount }}</p>
+    <p><strong>Total Sellers:</strong> {{ total_sellers }}</p>
 </div>
 
-<!-- Weekly Energy Stats -->
-<div class="section chart-container">
-    <h2>Weekly Energy Stats</h2>
-    <canvas id="weeklyChart"></canvas>
+<div class="charts">
+    <h2>Daily Sales Trend (Last 10 Days)</h2>
+    <canvas id="dailySalesChart"></canvas>
 </div>
 
-<!-- Monthly Revenue -->
-<div class="section chart-container">
-    <h2>Monthly Revenue</h2>
-    <canvas id="monthlyChart"></canvas>
+<div class="charts">
+    <h2>Monthly Sales (Last 6 Months)</h2>
+    <canvas id="monthlySalesChart"></canvas>
 </div>
 
-<!-- Recent Trades -->
-<div class="section">
-    <h2>Recent Trades</h2>
+<div class="charts">
+    <h2>Top 5 Sellers by Revenue</h2>
+    <canvas id="topSellersChart"></canvas>
+</div>
+
+<div class="tables">
+    <h2>Recent Sales</h2>
     <table>
         <thead>
             <tr>
-                <th>Buyer</th>
-                <th>Email</th>
-                <th>Trade Type</th>
-                <th>Amount</th>
+                <th>Date</th>
+                <th>Seller</th>
+                <th>Energy (kWh)</th>
+                <th>Amount (₹)</th>
             </tr>
         </thead>
         <tbody>
-            {% for trade in recent_trades %}
-                <tr>
-                    <td>{{ trade.name }}</td>
-                    <td>{{ trade.email }}</td>
-                    <td>{{ trade.trade }}</td>
-                    <td>{{ trade.amount }}</td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="4">No recent trades found.</td>
-                </tr>
+            {% for sale in recent_sales %}
+            <tr>
+                <td>{{ sale.date }}</td>
+                <td>{{ sale.seller }}</td>
+                <td>{{ sale.energy }}</td>
+                <td>{{ sale.amount }}</td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
-<!-- Chart Scripts -->
 <script>
-    const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
-    new Chart(weeklyCtx, {
-        type: 'bar',
+    new Chart(document.getElementById('dailySalesChart'), {
+        type: 'line',
         data: {
-            labels: {{ weekly.labels|safe }},
-            datasets: [
-                {
-                    label: 'Energy Sold (kWh)',
-                    data: {{ weekly.sold|safe }},
-                    backgroundColor: 'rgba(54, 162, 235, 0.6)'
-                },
-                {
-                    label: 'Energy Saved (kWh)',
-                    data: {{ weekly.saved|safe }},
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true }
-            }
+            labels: {{ daily_sales_labels|safe }},
+            datasets: [{
+                label: 'Sales Amount (₹)',
+                data: {{ daily_sales_values|safe }},
+                borderColor: 'rgba(75, 192, 192, 1)',
+                fill: true,
+                tension: 0.4,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)'
+            }]
         }
     });
 
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-    new Chart(monthlyCtx, {
-        type: 'line',
+    new Chart(document.getElementById('monthlySalesChart'), {
+        type: 'bar',
         data: {
-            labels: {{ monthly.labels|safe }},
+            labels: {{ monthly_labels|safe }},
             datasets: [{
-                label: 'Monthly Revenue (₹)',
-                data: {{ monthly.revenue|safe }},
-                fill: true,
-                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                label: 'Monthly Sales (₹)',
+                data: {{ monthly_values|safe }},
+                backgroundColor: 'rgba(153, 102, 255, 0.6)',
                 borderColor: 'rgba(153, 102, 255, 1)',
-                tension: 0.3
+                borderWidth: 1
             }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: { beginAtZero: true }
-            }
+        }
+    });
+
+    new Chart(document.getElementById('topSellersChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ top_sellers_names|safe }},
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: {{ top_sellers_revenue|safe }},
+                backgroundColor: [
+                    '#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'
+                ]
+            }]
         }
     });
 </script>

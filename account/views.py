@@ -5,6 +5,7 @@ from django.db.models import Case, When, Value, CharField
 from .forms import SignUpForm, LoginForm, UserEditForm
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, get_object_or_404
+from django.db.models.functions import TruncDay, TruncMonth
 # Create your views here.
 from .models import User, Proposal, Trade, Transaction, Notification
 from django.contrib import messages
@@ -97,7 +98,7 @@ def login_view(request):
                 else:
                     msg = "Username does not exist. Please check and try again."
         else:
-            msg = "Error validating form data."
+            msg = "Incorrect Captcha!"
 
     return render(request, 'login.html', {'form': form, 'msg': msg})
 def admin(request):
@@ -242,7 +243,7 @@ def seller_dashboard(request):
 
     recent_trades = [
         {
-            'name': f"{trade.buyer.first_name} {trade.buyer.last_name}",
+            'name': f"{trade.buyer.username}",
             'email': trade.buyer.email,
             'trade': 'Sold',
             'amount': f"₹{float(trade.proposal.amount):.2f}"
@@ -380,7 +381,7 @@ def buyer_dashboard(request):
     for trade in recent_trades:
         seller = trade.seller
         recent_data.append({
-            'name': seller.first_name + ' ' + seller.last_name,
+            'name':  f"{trade.seller.username}",
             'email': seller.email,
             'trade': f"{trade.proposal.energy_ask}",
             'amount': f"{trade.proposal.amount}"
@@ -408,6 +409,40 @@ def user_list(request):
 def user_details(request, user_id):
     user = get_object_or_404(User, id=user_id)
     return render(request, 'admin-user-details.html', {'user': user})
+
+def admin_profile_details(request):
+    user = request.user
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_profile')  # Use the correct URL name
+    else:
+        form = UserEditForm(instance=user)
+    return render(request, 'admin_profile_details.html', {'form': form, 'user': user})
+
+def buyer_profile_details(request):
+    user = request.user
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('buyer_profile')  # Use the correct URL name
+    else:
+        form = UserEditForm(instance=user)
+    return render(request, 'buyer_profile_details.html', {'form': form, 'user': user})
+
+
+def seller_profile_details(request):
+    user = request.user
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('seller_profile')  # Use the correct URL name
+    else:
+        form = UserEditForm(instance=user)
+    return render(request, 'seller_profile_details.html', {'form': form, 'user': user})
 
 def edit_user_details(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -437,11 +472,78 @@ def energyanalytic_page(request):
     return render(request, 'energyanalytic.html')
 
 def notification_page(request):
-    return render(request, 'notification.html')
+    notifications = Notification.objects.all().order_by('-created_at')
+    return render(request, 'notification.html', {'notifications': notifications})
+
+
+
+
 
 def report_page(request):
-    return render(request, 'report.html')
+    # Total sales metrics
+    total_sales_energy = Proposal.objects.aggregate(total_energy=Sum('energy_ask'))['total_energy'] or 0
+    total_sales_amount =Proposal.objects.aggregate(total_amount=Sum('amount'))['total_amount'] or 0
+    total_sellers = User.objects.filter(is_customer=False).count()
 
+    # Daily sales data (last 10 days)
+    recent_sales_data = (
+        Proposal.objects
+        .annotate(day=TruncDay('created_at'))
+        .values('day')
+        .annotate(daily_total=Sum('amount'))
+        .order_by('-day')[:10][::-1]
+    )
+    daily_sales_labels = [item['day'].strftime('%Y-%m-%d') for item in recent_sales_data]
+    daily_sales_values = [float(item['daily_total'] or 0) for item in recent_sales_data]
+
+    # Monthly sales data (last 6 months)
+    monthly_sales_data = (
+        Proposal.objects
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(monthly_total=Sum('amount'))
+        .order_by('-month')[:6][::-1]
+    )
+    monthly_labels = [item['month'].strftime('%b %Y') for item in monthly_sales_data]
+    monthly_values = [float(item['monthly_total'] or 0) for item in monthly_sales_data]
+
+    # Top 5 sellers by revenue
+    top_sellers_data = (
+        Proposal.objects
+        .values(seller_name=F('user__first_name'))
+        .annotate(revenue=Sum('amount'))
+        .order_by('-revenue')[:5]
+    )
+    top_sellers_names = [item['seller_name'] or "Unknown" for item in top_sellers_data]
+    top_sellers_revenue = [float(item['revenue'] or 0) for item in top_sellers_data]
+
+    # Recent sales (last 10)
+    recent_sales = (
+        Proposal.objects
+        .select_related('user')
+        .order_by('-created_at')[:10]
+    )
+    recent_sales_data = [{
+        'date': sale.created_at.strftime('%Y-%m-%d'),
+        'seller': sale.user.first_name,
+        'energy': sale.energy_ask,
+        'amount': float(sale.amount)
+    } for sale in recent_sales]
+
+    context = {
+        'total_sales_energy': total_sales_energy,
+        'total_sales_amount': float(total_sales_amount),
+        'total_sellers': total_sellers,
+        'daily_sales_labels': daily_sales_labels,
+        'daily_sales_values': daily_sales_values,
+        'monthly_labels': monthly_labels,
+        'monthly_values': monthly_values,
+        'top_sellers_names': top_sellers_names,
+        'top_sellers_revenue': top_sellers_revenue,
+        'recent_sales': recent_sales_data,
+    }
+
+    return render(request, 'report.html', context)
 def systemsetting_page(request):
     return render(request, 'systemsetting.html')
 
@@ -730,7 +832,7 @@ def seller_process_trade(request):
             Notification.objects.create(
                 user=buyer,
                 type='trade_accepted',
-                message=f"Your proposal was accepted by {seller.username}.",
+                message=f"Proposal was accepted by {seller.username}.",
                 data={
                     'proposal_id': str(proposal.id),
                     'energy_ask': proposal.energy_ask,
@@ -742,7 +844,7 @@ def seller_process_trade(request):
             Notification.objects.create(
                 user=seller,
                 type='trade_confirmed',
-                message=f"You accepted the proposal from {buyer.username}.",
+                message=f"{request.user.username}, accepted the proposal from {buyer.username}.",
                 data={
                     'proposal_id': str(proposal.id),
                     'energy_ask': proposal.energy_ask,
@@ -761,7 +863,7 @@ def seller_process_trade(request):
             Notification.objects.create(
                 user=buyer,
                 type='trade_rejected',
-                message=f"Your proposal was rejected by {seller.username}.",
+                message=f"{request.user.username}, proposal was rejected by {seller.username}.",
                 data={
                     'proposal_id': str(proposal.id),
                     'energy_ask': proposal.energy_ask,
@@ -814,7 +916,7 @@ def buyer_process_trade(request):
             Notification.objects.create(
                 user=seller,
                 type='trade_accepted',
-                message=f"Your proposal was accepted by {buyer.username}.",
+                message=f"Proposal was accepted by  {seller.username}.",
                 data={
                     'proposal_id': str(proposal.id),
                     'energy_ask': proposal.energy_ask,
@@ -826,7 +928,7 @@ def buyer_process_trade(request):
             Notification.objects.create(
                 user=buyer,
                 type='trade_confirmed',
-                message=f"You accepted the proposal from {seller.username}.",
+                message=f"{request.user.username}, accepted the proposal from {seller.username}.",
                 data={
                     'proposal_id': str(proposal.id),
                     'energy_ask': proposal.energy_ask,
@@ -845,7 +947,7 @@ def buyer_process_trade(request):
             Notification.objects.create(
                 user=seller,
                 type='trade_rejected',
-                message=f"Your proposal was rejected by {buyer.username}.",
+                message=f"{request.user.username}, proposal was rejected by {buyer.username}.",
                 data={
                     'proposal_id': str(proposal.id),
                     'energy_ask': proposal.energy_ask,
@@ -999,35 +1101,37 @@ def admin_transactions_view(request):
     except ValueError:
         rows_per_page = 10
 
-    # Fetch all trades with related data
-    trades = Trade.objects.select_related('buyer', 'seller', 'proposal').annotate(
-        display_type=Case(
-            When(proposal__type='BUY', then=Value('Accepted & Sold by Seller')),
-            When(proposal__type='SELL', then=Value('Accepted & Bought by Buyer')),
-            default=Value('Unknown'),
-            output_field=CharField(),
-        )
-    )
+    # Start with all trades, select related to reduce queries
+    trades = Trade.objects.select_related('buyer', 'seller', 'proposal')
 
-    # Apply search filter
+    # Apply search filter on buyer, seller usernames and trade id
     if search_query:
         trades = trades.filter(
             Q(buyer__username__icontains=search_query) |
             Q(seller__username__icontains=search_query) |
-            Q(buyer__email__icontains=search_query) |
-            Q(seller__email__icontains=search_query) |
             Q(id__icontains=search_query)
         )
 
-    # Apply date filter
+    # Apply date filters if provided
     if start_date:
         trades = trades.filter(created_at__date__gte=start_date)
     if end_date:
         trades = trades.filter(created_at__date__lte=end_date)
 
+    # Order by newest first
     trades = trades.order_by('-created_at')
 
-    # Paginate results
+    # Annotate each trade with display_type label
+    trades = trades.annotate(
+        display_type=Case(
+            When(proposal__type='BUY', then=Value('BUY - Accepted & Sold by Seller')),
+            When(proposal__type='SELL', then=Value('SELL - Accepted & Bought by Buyer')),
+            default=Value('Unknown'),
+            output_field=CharField(),
+        )
+    )
+
+    # Paginate the results
     paginator = Paginator(trades, rows_per_page)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -1046,9 +1150,32 @@ def admin_transactions_view(request):
 
 
 
+ # Replace 'yourapp' with your app name
 
 def dashboard_view(request):
-    # 1. Trades count per day (last 10 days)
+    # Permission check (only admin users)
+    # if not request.user.is_authenticated or not request.user.is_admin:
+    #     return render(request, '403.html', status=403)
+
+    today = datetime.today().date()
+
+    # Summary Stats
+    total_users = User.objects.count()
+    total_energy_consumed = Proposal.objects.aggregate(total=Sum('energy_ask'))['total'] or 0
+    total_energy_saved = User.objects.aggregate(total=Sum('total_energy_saved'))['total'] or 0
+    total_earning = Proposal.objects.aggregate(total=Sum('amount'))['total'] or 0
+
+    unique_buyers = User.objects.filter(role='customer').count()
+    unique_sellers = User.objects.filter(role='seller').count()
+
+    summary = {
+        'users': total_users,
+        'energy_consumed': total_energy_consumed,
+        'energy_saved': total_energy_saved,
+        'earning': total_earning,
+    }
+
+    # Trades per Day (Last 10 Days)
     trades_per_day_qs = (
         Trade.objects
         .annotate(day=TruncDay('created_at'))
@@ -1056,39 +1183,72 @@ def dashboard_view(request):
         .annotate(count=Count('id'))
         .order_by('-day')[:10]
     )
-    trades_per_day_qs = reversed(list(trades_per_day_qs))
+    trades_per_day_qs = list(reversed(trades_per_day_qs))  # oldest first
+    daily_trade_labels = [item['day'].strftime('%b %d') for item in trades_per_day_qs]
+    daily_trade_counts = [item['count'] for item in trades_per_day_qs]
 
-    trades_labels = [item['day'].strftime('%Y-%m-%d') for item in trades_per_day_qs]
-    trades_data = [item['count'] for item in trades_per_day_qs]
+    # Monthly Earnings (last 6 months)
+    monthly_data = defaultdict(float)
+    for i in range(5, -1, -1):  # past 6 months in chronological order
+        month = (today.replace(day=1) - timedelta(days=30*i)).replace(day=1)
+        label = month.strftime('%b %Y')
+        total = Proposal.objects.filter(
+            created_at__year=month.year,
+            created_at__month=month.month
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        monthly_data[label] = float(total)
 
-    # 2. Total users count
-    total_users = User.objects.count()
+    monthly_earning_labels = list(monthly_data.keys())
+    monthly_earning_values = list(monthly_data.values())
 
-    # 3. Total energy consumed
-    total_energy_consumed = Proposal.objects.aggregate(total=Sum('energy_ask'))['total'] or 0
+    # Recent Trades (Last 5)
+    recent_trades_qs = Trade.objects.select_related('buyer', 'seller', 'proposal').order_by('-created_at')[:5]
+    recent_trades = []
+    for trade in recent_trades_qs:
+        recent_trades.append({
+            'date': trade.created_at.strftime('%Y-%m-%d'),
+            'buyer': f"{trade.buyer.first_name} {trade.buyer.last_name}",
+            'seller': f"{trade.seller.first_name} {trade.seller.last_name}",
+            'energy': trade.proposal.energy_ask,
+            'amount': trade.proposal.amount,
+        })
 
-    # 4. Total energy saved
-    total_energy_saved = User.objects.aggregate(total=Sum('total_energy_saved'))['total'] or 0
+    monthly_energy = defaultdict(float)
+    monthly_earning = defaultdict(float)
+    for i in range(5, -1, -1):  # past 6 months in chronological order
+        month = (today.replace(day=1) - timedelta(days=30 * i)).replace(day=1)
+        label = month.strftime('%b %Y')
 
-    # 5. Earnings
-    earning = Proposal.objects.aggregate(total=Sum('amount'))['total'] or 0
+        proposals = Proposal.objects.filter(
+            created_at__year=month.year,
+            created_at__month=month.month
+        )
 
-    # ✅ 6. Recent trades with user info and amount
-    recent_trades = (
-        Trade.objects
-        .select_related('seller')  # Adjust if using `buyer` instead
-        .order_by('-created_at')[:5]
-    )
+        total_energy = proposals.aggregate(total=Sum('energy_ask'))['total'] or 0
+        total_amount = proposals.aggregate(total=Sum('amount'))['total'] or 0
+
+        monthly_energy[label] = float(total_energy)
+        monthly_earning[label] = float(total_amount)
+
+    monthly_labels = list(monthly_energy.keys())
+    monthly_energy_values = list(monthly_energy.values())
+    monthly_earning_values = list(monthly_earning.values())
 
     context = {
-        'trades_labels': json.dumps(trades_labels),
-        'trades_data': json.dumps(trades_data),
-        'total_users': total_users,
-        'total_energy_consumed': total_energy_consumed,
-        'total_energy_saved': total_energy_saved,
-        'earning': earning,
+        'summary': summary,
+        'daily_trade_labels': json.dumps(daily_trade_labels),
+        'daily_trade_counts': json.dumps(daily_trade_counts),
+        'monthly_earning_labels': json.dumps(monthly_earning_labels),
+        'monthly_earning_values': json.dumps(monthly_earning_values),
         'recent_trades': recent_trades,
+        'unique_buyers': unique_buyers,
+        'unique_sellers': unique_sellers,
+        'monthly_labels': json.dumps(monthly_labels),
+        'monthly_energy_values': json.dumps(monthly_energy_values),  # For bars
+        'monthly_earning_values': json.dumps(monthly_earning_values),  # For line
+
     }
+
     return render(request, 'admin.html', context)
 
 def forgot_password_view(request):
@@ -1172,6 +1332,7 @@ def reset_password_view(request):
         except User.DoesNotExist:
             messages.error(request, 'Session expired. Please start over.')
             return redirect('forgot_password')
+
     return render(request, 'reset_password.html')
 
 

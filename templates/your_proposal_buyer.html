@@ -102,20 +102,7 @@ button:hover {
 
 <!-- Page Content -->
 <div class="side-div-section24" >
-    <div class="w3-container w3-teal">
-        <div><h1>Logo</h1></div>
-
-
-
-        <div class="logo-left-icons">
-            <i class="material-icons">&#xe001;</i>
-            <i class="material-icons">&#xe1ac;</i>
-            <i class="material-icons">&#xe853;</i>
-        </div>
-
-        <!-- Hamburger Menu (Visible in mobile view) -->
-        <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
-    </div>
+    {% include "includes/buyer_topbar.html" %}
 
     <div class="w3-container">
         <div class="all-users-container">
@@ -166,18 +153,24 @@ button:hover {
             <td> € {{ proposal.amount }}</td>
             <td>{{ proposal.status }}</td>
             <td class="icons56785">
-                        <a href="{% url 'edit_buyer_proposal' proposal.id %}">
+  {% if proposal.status != "Accepted" and proposal.status != "Rejected" %}
+    <!-- Enabled Edit Link -->
+    <a href="{% url 'edit_buyer_proposal' proposal.id %}">
       <i style="font-size:24px" class="fa edit45">&#xf044;</i>
     </a>
-                       <i style="font-size:24px; cursor:pointer;" class="fa fa-trash trash45"
-   onclick="confirmDelete(event, '{% url 'delete_buyer_proposal' proposal.id %}')"></i>
+    <!-- Enabled Delete Icon -->
+    <i style="font-size:24px; cursor:pointer;" class="fa fa-trash trash45"
+       onclick="confirmDelete(event, '{% url 'delete_buyer_proposal' proposal.id %}')"></i>
+  {% else %}
+    <!-- Disabled Edit Icon -->
+    <i style="font-size:24px; color:gray; cursor:not-allowed;" class="fa edit45" title="Action disabled">&#xf044;</i>
+    <!-- Disabled Delete Icon -->
+    <i style="font-size:24px; color:gray; cursor:not-allowed;" class="fa fa-trash trash45" title="Action disabled"></i>
+  {% endif %}
+</td>
 
-                    </td>
         </tr>
-        {% empty %}
-        <tr>
-            <td colspan="6">No proposals available at the moment.</td>
-        </tr>
+
         {% endfor %}
     </tbody>
         </table>

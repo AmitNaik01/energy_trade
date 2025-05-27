@@ -163,6 +163,8 @@ text-decoration: none;
     padding: 10px 50px;
 }
 
+
+
 .register-welcome-title{
     display: flex;
     justify-content: center;
@@ -270,16 +272,16 @@ font-size: 17px;
         font-weight: 600;
     }
 
-    .logo-left-icons{
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+   .logo-left-icons {
+    display: flex;
+    gap: 20px;
+    margin-left: auto; /* Pushes it to the right */
+}
 
     .logo-left-icons i{
         color: black;
     }
-
+ /*
     .logo-left-icons a{
        background-color: #00b02f4d;
        padding: 5px 20px;
@@ -288,7 +290,7 @@ font-size: 17px;
        text-transform: uppercase;
        font-size: 14px;
     }
-
+ */
     .top-das-grap-detai{
         display: flex;
         justify-content: space-between;
@@ -581,11 +583,12 @@ color: green;
       }
 
       .w3-container, .w3-panel {
-        padding: 0.01em 16px;
+        padding: 1.08em 16px;
         background: white;
         margin-top: 20px;
         border-radius: 20px;
     }
+
 
     .transtaion-div{
         display: flex;

@@ -8,6 +8,8 @@
 
 <div class="w3-sidebar w3-light-grey w3-bar-block" id="mySidebar">
   <span class="close-btn w3-button" style="color:rgb(0, 0, 0);">&times;</span>
+
+
   <h3 class="w3-bar-item title-admin">Buyer Dashboard</h3>
 
   <a href="{% url 'buyer' %}" class="w3-bar-item w3-button {% if request.path == '/buyer/' %}sidebar-active{% endif %}">
@@ -33,4 +35,6 @@
   <a href="{% url 'logout' %}" class="w3-bar-item w3-button log-out-btn">
     <span class="glyphicon">&#xe163;</span>Log out
   </a>
+
+
 </div>

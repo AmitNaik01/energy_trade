@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="{% static 'index.css' %}">
 <body>
 
@@ -260,20 +260,7 @@ div.pointer {
 
 <!-- Page Content -->
 <div class="side-div-section24" >
-    <div class="w3-container w3-teal">
-        <div><h1>Logo</h1></div>
-
-
-        <div class="logo-left-icons">
-            <i class="material-icons">&#xe001;</i>
-            <i class="material-icons">&#xe1ac;</i>
-            <i class="material-icons">&#xe853;</i>
-        </div>
-
-        <!-- Hamburger Menu (Visible in mobile view) -->
-        <span class="menu-btn">&#9776;</span> <!-- Hamburger Icon -->
-    </div>
-
+      {% include "includes/admin_topbar.html" %}
 
 
     <div class="w3-container w3-container890">
@@ -284,19 +271,19 @@ div.pointer {
     <div class="main-eng-div67">
         <div class="energy-analatics-num-div">
             <div class="eng-analtic-tiele">Total Capacity(MW)</div>
-            <div class="eng-analtic-num">634,000 <span class="arrow-report-page">&#11205;</span></div>
+            <div class="eng-analtic-num"><h3>634,000 </h3><span class="arrow-report-page">&#11205;</span></div>
         </div>
         <div class="energy-analatics-num-div">
             <div class="eng-analtic-tiele">Energy Production Efficiency</div>
-            <div class="eng-analtic-num">90.79% <span class="arrow-report-page">&#11205;</span></div>
+            <div class="eng-analtic-num"><h3>90.79% </h3><span class="arrow-report-page">&#11205;</span></div>
         </div>
         <div class="energy-analatics-num-div">
             <div class="eng-analtic-tiele">Number of sales</div>
-            <div class="eng-analtic-num">93.2 <span class="arrow-report-page2">&#11206;</span></div>
+            <div class="eng-analtic-num"> <h3>{{ total_sales_energy }}</h3> <span class="arrow-report-page">&#11205;</span></div>
         </div>
         <div class="energy-analatics-num-div">
             <div class="eng-analtic-tiele">Profit</div>
-            <div class="eng-analtic-num">$27.0k<span class="arrow-report-page">&#11205;</span></div>
+            <div class="eng-analtic-num"><h3>€ {{ total_sales_amount }}</h3><span class="arrow-report-page">&#11205;</span></div>
         </div>
     </div>
 </div>
@@ -306,8 +293,10 @@ div.pointer {
     <div class="w3-container w3-container890">
 <div class="report-meter-graph-box">
     <div class="chart">
-        <p class="meter-title">Sales Last 4 Week</p>
-        <canvas id="myChart" style="width:100%;max-width:600px"></canvas>
+        <div class="charts">
+    <h3 style="padding:20px">Daily Sales Trend (Last 10 Days)</h3>
+    <canvas id="dailySalesChart"></canvas>
+</div>
     </div>
 
     <div class="meater-div">
@@ -333,7 +322,8 @@ div.pointer {
         </div>
     </div>
         <div class="line-chat">
-        <div id="myChart2" style="width:100%; height:500px;"></div>
+        <h3 style="padding:20px">Monthly Sales (Last 6 Months)</h3>
+    <canvas id="monthlySalesChart"></canvas>
     </div>
     </div>
 </div>
@@ -371,47 +361,48 @@ function changeReading() {
   needle.style.transform = `rotate(${newReading}deg)`;
 }
 
+ new Chart(document.getElementById('dailySalesChart'), {
+        type: 'line',
+        data: {
+            labels: {{ daily_sales_labels|safe }},
+            datasets: [{
+                label: 'Sales Amount (€)',
+                data: {{ daily_sales_values|safe }},
+                borderColor: 'rgba(75, 192, 192, 1)',
+                fill: true,
+                tension: 0.4,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)'
+            }]
+        }
+    });
 
-const xValues = ["one", "two", "three"];
-const yValues = [55, 49, 44,];
-const barColors = [
-  "green",
-  "#gray",
-  "#2b5797",
-];
+    new Chart(document.getElementById('monthlySalesChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ monthly_labels|safe }},
+            datasets: [{
+                label: 'Monthly Sales (₹)',
+                data: {{ monthly_values|safe }},
+                backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        }
+    });
 
-new Chart("myChart", {
-  type: "doughnut",
-  data: {
-    datasets: [{
-      backgroundColor: barColors,
-      data: yValues
-    }]
-  },
-});
-
-
-google.charts.load('current', {'packages':['corechart']});
-google.charts.setOnLoadCallback(drawChart);
-
-function drawChart() {
-const data = google.visualization.arrayToDataTable([
-  ['Contry', 'Mhl'],
-  ['55',99],
-  ['49',49],
-  ['44',44],
-  ['24',24],
-  ['15',15]
-]);
-
-const options = {
-  title:'Sale Last 12 Months'
-};
-
-const chart = new google.visualization.BarChart(document.getElementById('myChart2'));
-  chart.draw(data, options);
-}
-
+    new Chart(document.getElementById('topSellersChart'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ top_sellers_names|safe }},
+            datasets: [{
+                label: 'Revenue (€)',
+                data: {{ top_sellers_revenue|safe }},
+                backgroundColor: [
+                    '#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff'
+                ]
+            }]
+        }
+    });
 </script>
 
 </body>
