@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<title>Trader Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<body>
+
+<!-- Sidebar --><style>
+                .icons56785{
+            background-color: rgb(51, 51, 51);
+            color: white !important;
+            cursor: pointer;
+        }
+        .gg1 {
+    padding: 20px;
+    width: 80% !important;
+}
+
+.graph-title{
+  color: black;
+  font-size: 17px;
+  font-weight: 600;
+}
+.earn-content{
+  color: rgb(49, 194, 49);
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.canva-center{
+  height: 250px;
+  display: flex;
+  justify-content: center;
+}
+
+.saller-dashboard-sec-section{
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  gap: 10px;
+}
+
+.sdss-first{
+  width:30%;
+  border: 1px solid rgba(128, 128, 128, 0.418);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.energy-saveing-ssdss-first{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+}
+
+.this-months-btn{
+  background-color: rgb(29, 155, 29);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+.ssdsss-first-image{
+  width: 100%;
+  padding: 20px;
+}
+
+.ssdsss-first-image img{
+  width: 100%;
+}
+
+.ssdss-first-content{
+  text-align: center;
+  color: black;
+}
+
+.sdss-sec{
+  width: 33.33%;
+  border: 1px solid rgba(128, 128, 128, 0.418);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.sdss-sec canvas{
+  height: 400px;
+}
+
+.sdss-three{
+  width: 36.33%;
+  border: 1px solid rgba(128, 128, 128, 0.418);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.rec-trad-sub{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.nam-profike{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nam-profike img{
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 1px solid gray;
+  margin-right: 10px;
+}
+
+.profile-name p{
+  margin: 0px;
+}
+
+.sold-btn p{
+  background-color: rgb(31, 151, 31);
+  padding: 10px;
+  color: white;
+}
+
+@media screen and (max-width: 790px){
+  .gg1 {
+    padding: 10px;
+    width: 100% !important;
+}
+.saller-dashboard-sec-section{
+  display: block;
+}
+.sdss-first{
+  width: 100%;
+  margin-bottom: 10px;
+}
+.sdss-sec{
+  width: 100%;
+  margin-bottom: 10px;
+}
+.sdss-three{
+  width: 100%;
+}
+.saller-dashboard-sec-section{
+  padding: 0px;
+}
+.all-tiel-box-conetn {
+        display: flex
+;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .w3-container, .w3-panel{
+      padding: 5px;
+    }
+}
+    </style>
+{% include "includes/trader_sidebar.html" %}
+
+<!-- Page Content -->
+<div class="side-div-section24">
+  {% include "includes/trader_topbar.html" %}
+
+  <div class="w3-container">
+    <div class="top-das-grap-detai">
+
+        <div class="tdgd-box">
+             <div class="tdgd-icon pp"><i style="font-size:24px" class="fa">&#xf1e6;</i></div>
+            <div class="tdgd-content-box">
+                <p class="tdgd-con-num">{{ summary.energy_sold }} kWh</p>
+                <p class="tdgd-con-con">Total Energy Sold</p>
+            </div>
+        </div>
+
+        <div class="tdgd-box">
+             <div class="tdgd-icon bb"><i style="font-size:24px" class="fa">&#xf1eb;</i></div>
+            <div class="tdgd-content-box">
+                <p class="tdgd-con-num">{{ summary.energy_bought }} kWh</p>
+                <p class="tdgd-con-con">Total Energy Bought</p>
+            </div>
+        </div>
+
+        <div class="tdgd-box">
+            <div class="tdgd-icon uu"><i class="material-icons">&#xe853;</i></div>
+            <div class="tdgd-content-box">
+                <p class="tdgd-con-num"> € {{ summary.earnings }} </p>
+                <p class="tdgd-con-con">Total Earnings</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="graphic-container">
+
+        <div class="section chart-container">
+            <h2>Weekly Energy Stats</h2>
+            <canvas id="weeklyChart" style="width:500px"></canvas>
+        </div>
+
+        <div class="section chart-container">
+            <h2>Monthly Revenue</h2>
+            <canvas id="monthlyChart" style="width:500px"></canvas>
+        </div>
+
+    </div>
+
+    <div class="section">
+        <h2>Recent Trades</h2>
+        {% if recent_trades %}
+            <table class="section-table table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Buyer Name</th>
+                        <th>Email</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for trade in recent_trades|slice:":5" %}
+                        <tr>
+                            <td>{{ trade.name }}</td>
+                            <td>{{ trade.email }}</td>
+                            <td>{{ trade.amount }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No recent trades available.</p>
+        {% endif %}
+    </div>
+
+  </div>
+</div>
+
+<script>
+    const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+    new Chart(weeklyCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ weekly.labels|safe }},
+            datasets: [
+                {
+                    label: 'Energy Sold (kWh)',
+                    data: {{ weekly.sold|safe }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)'
+                },
+                {
+                    label: 'Energy Bought (kWh)',
+                    data: {{ weekly.bought|safe }},
+                    backgroundColor: 'rgba(255, 206, 86, 0.6)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: {{ monthly.labels|safe }},
+            datasets: [{
+                label: 'Monthly Revenue (€)',
+                data: {{ monthly.revenue|safe }},
+                fill: true,
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+<script src="index.js"></script>
+</body>
+</html>

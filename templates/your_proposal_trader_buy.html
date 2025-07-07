@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<title>Trader Your Buy Proposals</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<link rel="stylesheet" href="{% static 'index.css' %}">
+<body>
+
+    <style>
+        .saller-user-list-heading{
+            font-size: 20px;
+            color: black;
+        }
+
+
+        .actiave-link{
+            background-color: white !important;
+            color: rgb(0, 132, 255) !important;
+        }
+
+        .popup {
+    display: none; /* Initially hide the popup */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 500px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    background-color: #28a745;
+    color: white;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+.pop-up-title{
+    display: flex;
+    justify-content: center;
+    font-size: 25px;
+    font-weight: 600;
+    color: black;
+    margin-bottom: 20px;
+}
+
+.pop-up-lable{
+    color: black;
+    font-weight: 600;
+}
+
+.pop-up-input{
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background-color: rgb(218, 218, 218);
+}
+
+.pop-btn{
+    display: flex;
+    justify-content: center;
+}
+    </style>
+
+<!-- Sidebar -->
+{% include "includes/trader_sidebar.html" %}
+
+<!-- Page Content -->
+<div class="side-div-section24">
+    {% include "includes/trader_topbar.html" %}
+
+    <div class="w3-container">
+        <div class="all-users-container">
+            <h1 class="saller-user-list-heading">My Buy Proposals</h1>
+            <div class="all-user-title-box-with-search">
+                <div class="all-tiel-box-conetn">
+                    <a href="{% url 'trader_buy_energy' %}">Seller Proposals</a>
+                </div>
+            </div>
+        </div>
+
+        <table id="proposalTable" class="section-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Energy Ask</th>
+                    <th>Amount (€)</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proposal in proposals %}
+                <tr>
+                    <td>{{ proposal.description|truncatechars:50 }}</td>
+                    <td>{{ proposal.energy_ask }} kWh</td>
+                    <td>{{ proposal.amount }}</td>
+                    <td>{{ proposal.status }}</td>
+                    <td class="icons56785">
+                        {% if proposal.status != "Accepted" and proposal.status != "Rejected" %}
+                            <a href="{% url 'edit_trader_buy_proposal' proposal.id %}">
+                                <i style="font-size:24px" class="fa">&#xf044;</i>
+                            </a>
+                            <i style="font-size:24px; cursor:pointer;" class="fa fa-trash"
+                               onclick="confirmDelete(event, '{% url 'delete_trader_buy_proposal' proposal.id %}')"></i>
+                        {% else %}
+                            <i style="font-size:24px; color:gray; cursor:not-allowed;" class="fa" title="Action disabled">&#xf044;</i>
+                            <i style="font-size:24px; color:gray; cursor:not-allowed;" class="fa fa-trash" title="Action disabled"></i>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function confirmDelete(event, deleteUrl) {
+    event.preventDefault();
+    if (confirm("Are you sure you want to delete this proposal?")) {
+        window.location.href = deleteUrl;
+    }
+}
+</script>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<!-- DataTables CSS and JS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#proposalTable').DataTable({
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            order: [],
+            language: {
+                search: "Search:"
+            }
+        });
+    });
+</script>
+<script src="{% static 'index.js' %}"></script>
+</body>
+</html>

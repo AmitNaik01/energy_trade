@@ -27,6 +27,7 @@ class SignUpForm(UserCreationForm):
         ('Admin', 'Admin'),
         ('Seller', 'Seller'),
         ('Buyer', 'Buyer'),
+        ('Trader', 'Trader'),
     ]
 
     role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.Select(attrs={"class": "form-control"}))
@@ -59,10 +60,15 @@ class SignUpForm(UserCreationForm):
         user.is_admin = (role == 'Admin')
         user.is_employee = (role == 'Seller')
         user.is_customer = (role == 'Buyer')
-
+        user.is_trader = (role == 'Trader')
+     
+        user.role = role  # ✅ Save actual role
+        
         if commit:
             user.save()
         return user
+        
+    
 
 
 
@@ -71,6 +77,7 @@ class UserEditForm(forms.ModelForm):
         ('Admin', 'Admin'),
         ('Seller', 'Seller'),
         ('Buyer', 'Buyer'),
+        ('Trader', 'Trader'),
     ]
 
     role = forms.ChoiceField(choices=ROLE_CHOICES, widget=forms.Select(attrs={"class": "form-control"}))
@@ -94,6 +101,11 @@ class UserEditForm(forms.ModelForm):
         user.is_admin = (role == 'Admin')
         user.is_employee = (role == 'Seller')
         user.is_customer = (role == 'Buyer')
+        user.is_trader = (role == 'Trader')
+
+
+
+        user.role = role  # ✅ Save actual role
 
         if commit:
             user.save()

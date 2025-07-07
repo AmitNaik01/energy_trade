@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <title>Trader Notifications</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="{% static 'index.css' %}">
+
+    <style>
+        .noti {
+            border: none !important;
+            color: white !important;
+            background-color: black !important;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .section-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .section-table th, .section-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .section-table th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+{% include "includes/trader_sidebar.html" %}
+
+<div class="side-div-section24">
+    {% include "includes/trader_topbar.html" %}
+
+    <div class="w3-container">
+        <div class="add-user-page-box">
+            <p>Notifications</p>
+        </div>
+
+        {% if notifications %}
+        <table id="notificationTable" class="section-table">
+            <thead>
+                <tr>
+                    <th>Message</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for notification in notifications %}
+                <tr>
+                    <td>{{ notification.message }}</td>
+                    <td>{{ notification.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <button class="noti open-btn"
+                                data-message="{{ notification.message|escapejs }}"
+                                data-data="{% if notification.data %}{% for key, value in notification.data.items %}{{ key|capfirst }}: {{ value }}\n{% endfor %}{% else %}-{% endif %}">
+                            Open
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No notifications to show.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="notificationModal" class="modal fade" role="dialog" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <!-- DO NOT REMOVE CLOSE BUTTON -->
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+                <h4 class="modal-title">Notification Details</h4>
+            </div>
+            <div class="modal-body">
+                <p id="modalContent">Notification content will be displayed here.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#notificationTable').DataTable({
+            pageLength: 10,
+            lengthMenu: [10, 25, 50, 100],
+            order: [],
+            language: {
+                search: "Search:"
+            }
+        });
+
+        $('.open-btn').on('click', function () {
+            const message = $(this).data('message');
+            const rawData = String($(this).data('data')); 
+            const formattedData = rawData.replace(/\\n/g, "<br>");
+            const content = `<strong>${message}</strong><br><br>${formattedData}`;
+            $('#modalContent').html(content);
+            $('#notificationModal').modal('show');
+        });
+    });
+</script>
+
+<script src="{% static 'index.js' %}"></script>
+</body>
+</html>

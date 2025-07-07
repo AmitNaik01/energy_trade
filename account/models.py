@@ -7,6 +7,7 @@ ROLE_CHOICES = [
     ('Admin', 'Admin'),
     ('Seller', 'Seller'),
     ('Buyer', 'Buyer'),
+    ('Trader', 'Trader')
 ]
 STATUS_CHOICES = (
     ('active', 'Active'),
@@ -17,6 +18,8 @@ class User(AbstractUser):
     is_admin = models.BooleanField(default=False)
     is_customer = models.BooleanField(default=False)
     is_employee = models.BooleanField(default=False)
+    is_trader = models.BooleanField(default=False)
+
 
     address = models.TextField(blank=True, null=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Buyer')

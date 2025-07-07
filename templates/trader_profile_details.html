@@ -2,7 +2,7 @@
 {% load static %}
 <html>
 <head>
-  <title>Edit User Details</title>
+  <title>Edit Trader Profile</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
@@ -27,20 +27,19 @@
 <body>
 
 <!-- Sidebar -->
-{% include "includes/buyer_sidebar.html" %}
+{% include "includes/trader_sidebar.html" %}
 
 <!-- Page Content -->
 <div class="side-div-section24">
-  {% include "includes/buyer_topbar.html" %}
-
+  {% include "includes/trader_topbar.html" %}
   <div class="w3-container">
     <div class="all-users-container">
       <div class="all-user-title-box-with-search">
         <div class="all-user-deaceboarrd-search user-page-searchbar-box">
-          <p>Edit User: {{ user.username }}</p>
+          <p>Edit Trader: {{ user.username }}</p>
         </div>
         <div class="all-tiel-box-conetn">
-<!--          <a href="#" class="block-btn">Block User</a>-->
+          <!-- Optional Block User button -->
         </div>
       </div>
     </div>
@@ -68,13 +67,11 @@
 
             <label for="id_contact_no">Contact Number</label>
             {{ form.contact_no }}
-
-
           </div>
         </div>
 
         <div class="add-user-btns" style="margin-top:20px;">
-          <a href="{% url 'buyer' %}" class="add-user-cncl-btn btn btn-default">Cancel</a>
+          <a href="{% url 'trader' %}" class="add-user-cncl-btn btn btn-default">Cancel</a>
           <button type="button" id="edit-btn" class="btn btn-warning">Edit</button>
           <button type="submit" id="save-btn" class="add-user-add-btn btn btn-primary" style="display: none;">Save Changes</button>
         </div>
@@ -87,11 +84,11 @@
 
 <script>
   $(document).ready(function () {
-    // Initially make all inputs readonly
+    // Make all inputs readonly by default
     $('form input, form textarea, form select').attr('readonly', true);
 
     $('#edit-btn').click(function () {
-      // Enable input fields
+      // Enable fields
       $('form input, form textarea, form select').removeAttr('readonly');
 
       // Toggle buttons

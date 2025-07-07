@@ -15,8 +15,8 @@ urlpatterns = [
     path('profile/', views.admin_profile_details, name='admin_profile'),
     # path('buyer/', views.buyer, name='buyer'),
     path('buyer/', views.buyer_dashboard, name='buyer'),
-    path('profile/', views.buyer_profile_details, name='buyer_profile'),
-    path('profile/', views.seller_profile_details, name='seller_profile'),
+    path('profile/buyer', views.buyer_profile_details, name='buyer_profile'),
+    path('profile/seller', views.seller_profile_details, name='seller_profile'),
     path('seller_dashboard/', views.seller_dashboard, name='seller'),
     path('users/', views.user_list, name='user_list'),
     path('user/<int:user_id>/', views.user_details, name='user_details'),
@@ -71,4 +71,37 @@ urlpatterns = [
     path('buyer/proposal/delete/<int:proposal_id>/', views.delete_buyer_proposal, name='delete_buyer_proposal'),
 
     path('captcha/', include('captcha.urls')),
+
+
+
+
+
+    path('trader_dashboard/', views.trader_dashboard, name='trader'),
+    path('trader/sell-energy/', views.trader_sell_energy, name='trader_sell_energy'),
+    path('trader/buy-energy/', views.trader_buy_energy, name='trader_buy_energy'),
+    path('trader/transactions/', views.trader_transactions_view, name='trader_transactions'),
+    path('trader/notifications/', views.trader_notifications_view, name='trader_notifications'),
+    path('trader/create-buy-proposal/', views.create_trader_buy_proposal, name='create_trader_buy_proposal'),
+    path('trader/your-proposals/', views.your_proposal_buy_trade, name='your_proposal_buy_trade'),
+    path('trader/sell/create/', views.create_trader_sell_proposal, name='create_trader_sell_proposal'),
+    path('trader/your-sell-proposals/', views.your_proposal_trader_sell, name='your_proposal_trader_sell'),
+    path('trader/proposal/edit/<int:proposal_id>/', views.edit_trader_sell_proposal, name='edit_trader_sell_proposal'),
+    path('trader/proposal/delete/<int:proposal_id>/', views.delete_trader_sell_proposal, name='delete_trader_sell_proposal'),
+    path('trader/proposal/buy/edit/<int:proposal_id>/', views.edit_trader_buy_proposal, name='edit_trader_buy_proposal'),
+    path('trader/proposal/buy/delete/<int:proposal_id>/', views.delete_trader_buy_proposal, name='delete_trader_buy_proposal'),
+    path('profile/trader', views.trader_profile_details, name='trader_profile'),
+
+
+
+
+
+    
+
+
+
+
+
+
 ]
+
+handler404 = 'accounts.views.custom_404_view'
